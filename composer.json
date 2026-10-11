@@ -1,0 +1,25 @@
+{
+	"name": "asphaltthemes/credential-vault-monorepo",
+	"description": "Monorepo for Credential Vault free and pro WordPress plugins",
+	"type": "project",
+	"license": "GPL-3.0-or-later",
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+		"phpcompatibility/phpcompatibility-wp": "^2.1",
+		"wp-coding-standards/wpcs": "^3.0"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		},
+		"sort-packages": true
+	},
+	"scripts": {
+		"zip": "bash bin/build-zips.sh",
+		"phpcs": "phpcs --standard=WordPress --extensions=php packages/",
+		"phpcbf": "phpcbf --standard=WordPress --extensions=php packages/"
+	}
+}

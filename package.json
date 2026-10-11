@@ -1,0 +1,11 @@
+{
+	"name": "credential-vault-monorepo",
+	"private": true,
+	"scripts": {
+		"check:org": "bash bin/check-org-submission.sh",
+		"zip": "bash bin/build-zips.sh",
+		"zip:free": "bash bin/build-zips.sh free",
+		"zip:pro": "bash bin/build-zips.sh pro",
+		"link": "bash bin/link-plugins.sh"
+	}
+}

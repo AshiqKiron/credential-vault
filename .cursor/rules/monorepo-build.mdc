@@ -1,0 +1,12 @@
+---
+description: Release zips, symlinks, and monorepo layout for New free/pro
+globs: bin/**/*,package.json,composer.json
+alwaysApply: false
+---
+
+# Monorepo build
+
+- Release artifacts come from `packages/free` and `packages/pro` via `@bin/build-zips.sh`.
+- Zip layout: single top-level folder `credential-vault/` or `credential-vault-pro/` inside each archive under `dist/`.
+- Local dev: root `@credential-vault.php` loads free; `npm run link` symlinks packages into `wp-content/plugins/credential-vault` and `credential-vault-pro`.
+- Do not treat `dist/` or `.build/` as source—staging only.

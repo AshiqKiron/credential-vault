@@ -1,0 +1,26 @@
+# Copyright (C) 2026 ashiquzzaman
+# This file is distributed under the GPL-3.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Credential Vault 1.0.0\n"
+"Report-Msgid-Bugs-To: https://asphaltthemes.com/credential-vault\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-01-01T00:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Domain: credvault\n"
+
+#: admin/class-admin-admin.php
+msgid "New"
+msgstr ""
+
+#: admin/class-admin-admin.php
+msgid "You do not have permission to access this page."
+msgstr ""
+
+#: admin/class-admin-admin.php
+msgid "Plugin scaffolding is active. Replace this screen with your settings UI."
+msgstr ""

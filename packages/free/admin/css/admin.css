@@ -1,0 +1,57 @@
+.new-vault-wrap .card {
+	max-width: 720px;
+	margin-top: 1em;
+	padding: 1em 1.25em 1.25em;
+}
+
+.new-vault-sudo-panel h2 {
+	margin-top: 0;
+}
+
+.new-vault-meta {
+	margin: 1em 0;
+}
+
+.new-vault-badge {
+	display: inline-block;
+	margin-left: 0.35em;
+	padding: 0.1em 0.45em;
+	font-size: 11px;
+	line-height: 1.4;
+	border-radius: 3px;
+	background: #f0f0f1;
+	color: #1d2327;
+}
+
+.new-vault-badge--active {
+	background: #d5f5e3;
+	color: #135e2c;
+}
+
+.new-vault-badge--warn {
+	background: #fcf0cf;
+	color: #8a6d3b;
+}
+
+.new-vault-badge--readonly {
+	background: #fcebea;
+	color: #8a2424;
+}
+
+.new-vault-preview,
+.new-vault-fingerprint code {
+	font-size: 12px;
+}
+
+.new-vault-actions .new-vault-inline {
+	display: inline-block;
+	margin-right: 0.25em;
+}
+
+.new-vault-table {
+	margin-top: 1em;
+}
+
+.new-vault-audit {
+	margin-top: 1em;
+}
