@@ -11,8 +11,12 @@ namespace CredentialVault\Admin;
 
 use CredentialVault\Audit_Log;
 use CredentialVault\Import_Candidates;
+use CredentialVault\Plaintext_Scanner;
+use CredentialVault\Duplicate_Detector;
 use CredentialVault\Secrets_Bridge;
 use CredentialVault\Sudo_Gate;
+use CredentialVault\Vault_Capabilities;
+use CredentialVault\Vault_Settings;
 
 /**
  * Admin hooks and screens.
@@ -20,14 +24,14 @@ use CredentialVault\Sudo_Gate;
 final class Admin {
 
 	public function register_menu(): void {
-		if ( ! Secrets_Bridge::current_user_can_manage() ) {
+		if ( ! Secrets_Bridge::current_user_can_view() ) {
 			return;
 		}
 
 		add_menu_page(
 			__( 'Credential Vault', 'credvault' ),
 			__( 'Credential Vault', 'credvault' ),
-			'manage_options',
+			Vault_Capabilities::VIEW_CAP,
 			'credential-vault',
 			array( $this, 'render_vault_page' ),
 			'dashicons-lock',
@@ -60,8 +64,13 @@ final class Admin {
 			'saved'      => __( 'Credential saved.', 'credvault' ),
 			'deleted'    => __( 'Credential deleted.', 'credvault' ),
 			'retired'    => __( 'Previous rotation slot cleared.', 'credvault' ),
+			'rotated'    => __( 'Credential updated. Previous key kept in the rotation slot until you retire it.', 'credvault' ),
+			'rotate_warn' => __( 'Credential saved, but the post-rotation test reported a problem. Confirm integrations before retiring the previous slot.', 'credvault' ),
 			'copy_ready' => __( 'Credential ready to copy — use the prompt if auto-copy did not run.', 'credvault' ),
 			'imported'   => __( 'Import completed.', 'credvault' ),
+			'meta_saved'      => __( 'Credential details updated.', 'credvault' ),
+			'webhooks_saved'  => __( 'Webhook settings saved.', 'credvault' ),
+			'settings_saved'  => __( 'Vault settings saved.', 'credvault' ),
 		);
 
 		if ( 'imported' === $code && isset( $_GET['count'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -82,24 +91,34 @@ final class Admin {
 	}
 
 	public function render_vault_page(): void {
-		if ( ! Secrets_Bridge::current_user_can_manage() ) {
+		if ( ! Secrets_Bridge::current_user_can_view() ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'credvault' ) );
 		}
 
+		$can_manage    = Secrets_Bridge::current_user_can_manage();
 		$api_available = Secrets_Bridge::is_available();
 
 		$context = array(
+			'can_manage'          => $can_manage,
 			'api_available'       => $api_available,
 			'sudo_active'         => Sudo_Gate::is_active(),
 			'sudo_remaining'      => Sudo_Gate::remaining_seconds(),
-			'writable'            => $api_available && function_exists( 'wp_secrets_provider_is_writable' ) && wp_secrets_provider_is_writable(),
+			'sudo_mode'           => Vault_Settings::sudo_mode(),
+			'vault_settings'      => Vault_Settings::get(),
+			'writable'            => $can_manage && $api_available && function_exists( 'wp_secrets_provider_is_writable' ) && wp_secrets_provider_is_writable(),
 			'network_available'   => Secrets_Bridge::supports_network(),
 			'provider_label'      => Secrets_Bridge::provider_label(),
 			'credentials'         => $api_available ? Secrets_Bridge::list_vault_secrets( false ) : array(),
 			'network_credentials' => $api_available ? Secrets_Bridge::list_vault_secrets( true ) : array(),
-			'external_secrets'    => array(),
-			'audit_entries'       => Audit_Log::entries( 100 ),
+			'external_secrets'    => $api_available ? Secrets_Bridge::list_external_secrets( false ) : array(),
+			'audit_entries'       => Audit_Log::entries(
+				(int) apply_filters( 'credential_vault_audit_page_limit', 100 ),
+				self::audit_filters_from_request()
+			),
 			'import_candidates'   => Import_Candidates::detect(),
+			'scan_results'        => $api_available ? Plaintext_Scanner::scan() : array(),
+			'hygiene_issues'      => $api_available ? Duplicate_Detector::find() : array(),
+			'audit_filters'       => self::audit_filters_from_request(),
 			'pro_active'          => defined( 'CREDENTIAL_VAULT_PRO_VERSION' ),
 		);
 
@@ -147,11 +166,36 @@ final class Admin {
 					'credential-vault-admin',
 					'credentialVault',
 					array(
-						'clipboard' => $val,
+						'clipboard'       => $val,
+						'clipboardNotice' => __( 'Credential copied. Clear your clipboard when finished.', 'credvault' ),
 					)
 				);
 				delete_transient( $key );
 			}
 		}
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function audit_filters_from_request(): array {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filter UI.
+		if ( ! isset( $_GET['page'] ) || 'credential-vault' !== $_GET['page'] ) {
+			return array();
+		}
+
+		$filters = array();
+
+		if ( isset( $_GET['audit_action'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$filters['action'] = sanitize_key( (string) wp_unslash( $_GET['audit_action'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		if ( isset( $_GET['audit_secret'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$filters['secret'] = sanitize_text_field( (string) wp_unslash( $_GET['audit_secret'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		if ( isset( $_GET['audit_user'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$filters['user_id'] = (int) $_GET['audit_user']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+
+		return $filters;
 	}
 }

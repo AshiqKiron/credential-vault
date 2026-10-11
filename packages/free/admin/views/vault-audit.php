@@ -5,6 +5,7 @@
  * @package CredentialVault
  *
  * @var list<array<string, mixed>> $audit_entries
+ * @var array<string, mixed>       $audit_filters
  */
 
 declare( strict_types=1 );
@@ -13,7 +14,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+$audit_filters = $audit_filters ?? array();
+
 ?>
+<p class="description new-vault-audit-privacy">
+	<?php esc_html_e( 'Privacy: the audit log stores timestamps, action names, user IDs, secret names, and cryptographic fingerprints — never plaintext secret values. Export only what you need for compliance reviews.', 'credvault' ); ?>
+</p>
+<div class="new-vault-audit-toolbar">
+	<?php
+	/**
+	 * Audit filters and Pro search UI.
+	 *
+	 * @param array<string, mixed> $audit_filters
+	 */
+	do_action( 'credential_vault_audit_toolbar', $audit_filters );
+	?>
+	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="new-vault-audit-export">
+		<?php wp_nonce_field( 'credential_vault_export_audit' ); ?>
+		<input type="hidden" name="action" value="credential_vault_export_audit" />
+		<input type="hidden" name="audit_action" value="<?php echo esc_attr( (string) ( $audit_filters['action'] ?? '' ) ); ?>" />
+		<input type="hidden" name="audit_secret" value="<?php echo esc_attr( (string) ( $audit_filters['secret'] ?? '' ) ); ?>" />
+		<input type="hidden" name="audit_user" value="<?php echo esc_attr( (string) (int) ( $audit_filters['user_id'] ?? 0 ) ); ?>" />
+		<?php submit_button( __( 'Export CSV', 'credvault' ), 'secondary', '', false ); ?>
+	</form>
+</div>
 <table class="widefat striped new-vault-audit">
 	<thead>
 		<tr>
@@ -69,3 +93,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endif; ?>
 	</tbody>
 </table>
+<?php
+/**
+ * Fires after the vault credential audit table (Pro may render WP Sudo action audit).
+ */
+do_action( 'credential_vault_after_audit_log' );

@@ -38,6 +38,12 @@ final class Import_Candidates {
 				'plugin'         => 'openai',
 			),
 			array(
+				'option'         => 'aws_secret_access_key',
+				'label'          => __( 'AWS secret access key (generic option)', 'credvault' ),
+				'suggested_name' => 'aws/secret-access-key',
+				'plugin'         => 'aws',
+			),
+			array(
 				'option'         => 'recaptcha_secret_key',
 				'label'          => __( 'reCAPTCHA secret key', 'credvault' ),
 				'suggested_name' => 'google/recaptcha-secret',
@@ -48,6 +54,54 @@ final class Import_Candidates {
 				'label'          => __( 'SMTP password (generic)', 'credvault' ),
 				'suggested_name' => 'smtp/password',
 				'plugin'         => 'smtp',
+			),
+			array(
+				'option'         => 'twilio_auth_token',
+				'label'          => __( 'Twilio auth token', 'credvault' ),
+				'suggested_name' => 'twilio/auth-token',
+				'plugin'         => 'twilio',
+			),
+			array(
+				'option'         => 'postmark_api_key',
+				'label'          => __( 'Postmark server token', 'credvault' ),
+				'suggested_name' => 'postmark/api-key',
+				'plugin'         => 'postmark',
+			),
+			array(
+				'option'         => 'slack_api_token',
+				'label'          => __( 'Slack API token (generic option)', 'credvault' ),
+				'suggested_name' => 'slack/api-token',
+				'plugin'         => 'slack',
+			),
+			array(
+				'option'         => 'github_access_token',
+				'label'          => __( 'GitHub access token (generic option)', 'credvault' ),
+				'suggested_name' => 'github/access-token',
+				'plugin'         => 'github',
+			),
+			array(
+				'option'         => 'cloudflare_api_key',
+				'label'          => __( 'Cloudflare global API key', 'credvault' ),
+				'suggested_name' => 'cloudflare/api-key',
+				'plugin'         => 'cloudflare',
+			),
+			array(
+				'option'         => 'google_maps_api_key',
+				'label'          => __( 'Google Maps API key', 'credvault' ),
+				'suggested_name' => 'google/maps-api-key',
+				'plugin'         => 'google',
+			),
+			array(
+				'option'         => 'oauth_client_secret',
+				'label'          => __( 'OAuth client secret (generic option)', 'credvault' ),
+				'suggested_name' => 'oauth/client-secret',
+				'plugin'         => 'oauth',
+			),
+			array(
+				'option'         => 'slack_signing_secret',
+				'label'          => __( 'Slack signing secret', 'credvault' ),
+				'suggested_name' => 'slack/signing-secret',
+				'plugin'         => 'slack',
 			),
 		);
 

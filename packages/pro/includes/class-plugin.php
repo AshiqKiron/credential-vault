@@ -46,6 +46,12 @@ final class Plugin {
 
 	public static function register_pro_features(): void {
 		Rest_Controller::register();
+		Sudo_Audit_Logger::register();
+		Sudo_Security_Validator::register();
+		Sudo_Vault_Experience::register();
+		Sudo_Audit_Admin::register();
+		Audit_Pro::register();
+		Webhooks::register();
 
 		add_filter(
 			'credential_vault_admin_context',

@@ -8,7 +8,7 @@ Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-REST API and secret discovery for Credential Vault.
+REST API, WP Sudo integration, and secret discovery for Credential Vault.
 
 == Description ==
 
@@ -16,6 +16,9 @@ Requires the free **Credential Vault** plugin.
 
 * REST routes under `credential-vault/v1` for list, rotate, reveal, delete, retire
 * Sudo via active session or `sudo_password` / `POST /sudo`
+* **Sudo-gated action audit logger** when [WP Sudo](https://github.com/dknauss/Sudo) is active — session events, blocks, passes, lockouts, with IP and user agent
+* Custom vault re-authentication copy and one-click link to the WP Sudo challenge page
+* Session fingerprint mismatch detection (logged; extend via `credential_vault_pro_sudo_extra_validate`)
 * **Other secrets** tab listing credentials registered by other plugins
 
 == Installation ==

@@ -28,7 +28,11 @@ final class Plugin {
 		$this->loader = new Loader();
 		$this->set_locale();
 		Site_Health::register( $this->loader );
+		Rotation_Reminders::register( $this->loader );
+		Rotation_Recipes::register( $this->loader );
+		Vault_Capabilities::register( $this->loader );
 		$this->define_admin_hooks();
+		$this->define_cli_hooks();
 		$this->define_public_hooks();
 	}
 
@@ -65,6 +69,7 @@ final class Plugin {
 		}
 
 		Audit_Log::register_hooks( $this->loader );
+		Sudo_Integration::register( $this->loader );
 		Admin\Vault_Actions::register( $this->loader );
 
 		$admin = new Admin\Admin();
@@ -76,5 +81,9 @@ final class Plugin {
 	private function define_public_hooks(): void {
 		$public = new Public\Public_Facing();
 		$this->loader->add_action( 'wp_enqueue_scripts', $public, 'enqueue_assets' );
+	}
+
+	private function define_cli_hooks(): void {
+		$this->loader->add_action( 'cli_init', CLI::class, 'register' );
 	}
 }

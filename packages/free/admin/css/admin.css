@@ -55,3 +55,120 @@
 .new-vault-audit {
 	margin-top: 1em;
 }
+
+.new-vault-audit-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 1em 1.5em;
+	margin-top: 1em;
+}
+
+.new-vault-audit-filters label {
+	margin-right: 0.75em;
+}
+
+.new-vault-meta-details {
+	margin-top: 0.35em;
+	max-width: 280px;
+}
+
+.new-vault-meta-details summary {
+	cursor: pointer;
+}
+
+.new-vault-features {
+	max-width: none;
+	margin: 1em 0 1.25em;
+}
+
+.new-vault-features__list {
+	margin: 0.75em 0 0;
+	padding-left: 1.25em;
+	list-style: disc;
+}
+
+.new-vault-features__list li {
+	margin-bottom: 0.65em;
+}
+
+.new-vault-rotation {
+	max-width: 720px;
+	margin-top: 1em;
+}
+
+.new-vault-rotation__steps {
+	margin: 0.5em 0 0.75em;
+	padding-left: 1.25em;
+}
+
+.new-vault-integrations {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 1em;
+	margin: 1.25em 0 2em;
+}
+
+.new-vault-integration {
+	max-width: none;
+	margin-top: 0;
+}
+
+.new-vault-integration__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35em 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.new-vault-integration__title {
+	margin: 0;
+	font-size: 1.1em;
+}
+
+.new-vault-integration__actions {
+	margin-bottom: 0;
+}
+
+.new-vault-badge--env-production {
+	background: #d5f5e3;
+	color: #135e2c;
+}
+
+.new-vault-badge--env-staging {
+	background: #e8f4fd;
+	color: #1a4c7a;
+}
+
+.new-vault-badge--env-local {
+	background: #f0f0f1;
+	color: #50575e;
+}
+
+.new-vault-badge--env-development {
+	background: #f5e6ff;
+	color: #5b2c83;
+}
+
+.new-vault-badge--inherit {
+	background: #e8f4fd;
+	color: #1a4c7a;
+}
+
+.new-vault-code-sample {
+	background: #f6f7f7;
+	padding: 0.75em 1em;
+	overflow: auto;
+	font-size: 12px;
+}
+
+.new-vault-public-fields {
+	margin: 0.35em 0 0;
+	padding-left: 1.1em;
+	font-size: 12px;
+}
+
+.new-vault-audit-privacy {
+	margin-top: 1em;
+}

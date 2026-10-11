@@ -16,6 +16,11 @@ final class Secrets_Bridge {
 
 	public const VAULT_NAMESPACE = 'credential-vault';
 
+	/**
+	 * Capability for vault admin screens (granted to administrators on activate).
+	 */
+	public const VAULT_CAP = 'manage_credential_vault';
+
 	public static function is_available(): bool {
 		return function_exists( 'wp_list_secrets' ) && function_exists( 'wp_set_secret' );
 	}
@@ -40,12 +45,29 @@ final class Secrets_Bridge {
 		return 'manage_network_secrets';
 	}
 
+	public static function current_user_can_view( bool $network = false ): bool {
+		if ( self::current_user_can_manage( $network ) ) {
+			return true;
+		}
+
+		return current_user_can( Vault_Capabilities::VIEW_CAP );
+	}
+
 	public static function current_user_can_manage( bool $network = false ): bool {
+		if ( current_user_can( Vault_Capabilities::VIEW_CAP ) && ! current_user_can( self::VAULT_CAP )
+			&& ! current_user_can( self::manage_capability() ) && ! current_user_can( 'manage_options' ) ) {
+			return false;
+		}
+
 		if ( $network ) {
 			if ( current_user_can( self::network_manage_capability() ) ) {
 				return true;
 			}
 			return is_multisite() && current_user_can( 'manage_network' );
+		}
+
+		if ( current_user_can( self::VAULT_CAP ) ) {
+			return true;
 		}
 
 		if ( current_user_can( self::manage_capability() ) ) {
@@ -217,6 +239,88 @@ final class Secrets_Bridge {
 		}
 
 		return wp_import_option_as_secret( $option, $name );
+	}
+
+	/**
+	 * Import plaintext from a scanner/import reference key.
+	 *
+	 * @param string $import_key e.g. option:foo or usermeta:1:api_key.
+	 * @return true|\WP_Error
+	 */
+	public static function import_from_source( string $import_key, string $name ) {
+		if ( ! self::is_available() ) {
+			return new \WP_Error( 'credential_vault_no_api', __( 'Import is unavailable.', 'credvault' ) );
+		}
+
+		if ( 0 === strpos( $import_key, 'option:' ) ) {
+			$option = substr( $import_key, 7 );
+			if ( '' === $option ) {
+				return new \WP_Error( 'credential_vault_import', __( 'Invalid option reference.', 'credvault' ) );
+			}
+
+			if ( function_exists( 'wp_import_option_as_secret' ) ) {
+				return wp_import_option_as_secret( $option, $name );
+			}
+
+			$value = get_option( $option, null );
+			if ( ! is_string( $value ) || '' === trim( $value ) ) {
+				return new \WP_Error( 'credential_vault_import', __( 'Option value is missing or not a string.', 'credvault' ) );
+			}
+
+			return self::set_secret( $name, $value );
+		}
+
+		if ( 0 === strpos( $import_key, 'usermeta:' ) ) {
+			$parts = explode( ':', $import_key, 3 );
+			if ( count( $parts ) < 3 ) {
+				return new \WP_Error( 'credential_vault_import', __( 'Invalid user meta reference.', 'credvault' ) );
+			}
+
+			$user_id  = (int) $parts[1];
+			$meta_key = $parts[2];
+			$value    = get_user_meta( $user_id, $meta_key, true );
+
+			if ( ! is_string( $value ) || '' === trim( $value ) ) {
+				return new \WP_Error( 'credential_vault_import', __( 'User meta value is missing or not a string.', 'credvault' ) );
+			}
+
+			return self::set_secret( $name, $value );
+		}
+
+		return new \WP_Error( 'credential_vault_import', __( 'Unknown import source.', 'credvault' ) );
+	}
+
+	/**
+	 * @return list<array<string, mixed>>
+	 */
+	public static function export_metadata_inventory( bool $include_network = true ): array {
+		$rows    = self::list_vault_secrets( false );
+		if ( $include_network && self::supports_network() ) {
+			$rows = array_merge( $rows, self::list_vault_secrets( true ) );
+		}
+
+		$out = array();
+		foreach ( $rows as $row ) {
+			$name = (string) $row['name'];
+			$meta = Credential_Meta::get( $name );
+			$out[] = array(
+				'name'            => $name,
+				'slug'            => basename( $name ),
+				'label'           => $meta['label'] ?? '',
+				'service'         => $meta['service'] ?? '',
+				'environment'     => $meta['environment'] ?? '',
+				'owner'           => $meta['owner'] ?? '',
+				'runbook_url'     => $meta['runbook_url'] ?? '',
+				'public_fields'   => $meta['public_fields'] ?? array(),
+				'rotate_by'       => (int) ( $meta['rotate_by'] ?? 0 ),
+				'fingerprint'     => (string) ( $row['fingerprint'] ?? '' ),
+				'needs_rotation'  => ! empty( $row['needs_rotation'] ),
+				'has_previous'    => ! empty( $row['has_previous'] ),
+				'masked_preview'  => $meta['masked_preview'] ?? '',
+			);
+		}
+
+		return $out;
 	}
 
 	public static function masked_preview( string $plaintext ): string {

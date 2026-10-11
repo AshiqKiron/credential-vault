@@ -31,9 +31,9 @@ Artifacts land in `dist/`. Each archive contains a single top-level folder ready
 
 ## Features
 
-**Free:** Vault dashboard, sudo re-auth, site/network credentials, import wizard, Site Health tests, `credential_vault_get()` helper.
+**Free:** Centralized token dashboard (Stripe, OpenAI, AWS, Mailchimp), sudo-gated view/edit, key usage audit log, site/network credentials, import wizard + plaintext option scanner, credential metadata (environment, rotate-by, notes), `manage_credential_vault` capability, audit CSV export, WP-CLI (`wp credvault list|status|scan`), Site Health tests, `credential_vault_get()` helper (access is audited).
 
-**Pro:** REST API (`credential-vault/v1`), discovery tab for other plugins’ secrets.
+**Pro:** REST API (`credential-vault/v1`), extended audit retention/search, outbound webhooks (Automation tab), plus WP Sudo audit integration.
 
 ## Pro integration
 

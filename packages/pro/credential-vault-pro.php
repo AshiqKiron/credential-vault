@@ -10,7 +10,7 @@ declare( strict_types=1 );
 /**
  * Plugin Name:       Credential Vault Pro
  * Plugin URI:        https://example.com/credential-vault-pro
- * Description:       REST API, secret discovery, and advanced vault automation for Credential Vault.
+ * Description:       REST API, WP Sudo audit logging, and advanced vault automation for Credential Vault.
  * Version:           1.1.0
  * Requires at least: 6.6
  * Requires PHP:      7.4

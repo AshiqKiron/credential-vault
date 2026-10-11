@@ -1,5 +1,5 @@
 ---
-description: Release zips, symlinks, and monorepo layout for New free/pro
+description: Release zips, symlinks, and monorepo layout for free/pro
 globs: bin/**/*,package.json,composer.json
 alwaysApply: false
 ---

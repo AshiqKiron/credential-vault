@@ -10,6 +10,7 @@
  * @var bool $sudo_active
  * @var int  $sudo_remaining
  * @var bool $writable
+ * @var bool $can_manage
  */
 
 declare( strict_types=1 );
@@ -20,14 +21,48 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use CredentialVault\Credential_Meta;
 use CredentialVault\Secrets_Bridge;
+use CredentialVault\Vault_Settings;
 
 $presets     = Credential_Meta::service_presets();
 $is_network  = 'network' === $scope;
 $scope_label = $is_network ? __( 'network', 'credvault' ) : __( 'site', 'credvault' );
 
-include CREDENTIAL_VAULT_DIR . 'admin/views/vault-sudo-panel.php';
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$prefill_service = isset( $_GET['service'] ) ? sanitize_key( (string) wp_unslash( $_GET['service'] ) ) : '';
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$prefill_slug    = isset( $_GET['slug'] ) ? sanitize_key( (string) wp_unslash( $_GET['slug'] ) ) : '';
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$prefill_label   = isset( $_GET['label'] ) ? sanitize_text_field( rawurldecode( (string) wp_unslash( $_GET['label'] ) ) ) : '';
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$prefill_rotate  = isset( $_GET['rotate'] ) && '1' === (string) wp_unslash( $_GET['rotate'] );
 
-if ( $api_available && $writable && $sudo_active ) :
+if ( '' !== $prefill_service && ! isset( $presets[ $prefill_service ] ) ) {
+	$prefill_service = '';
+}
+
+$can_manage       = $can_manage ?? Secrets_Bridge::current_user_can_manage();
+$can_edit_secrets = $api_available && $writable && $can_manage && ( $sudo_active || ! Vault_Settings::sudo_required_for_writes() );
+$field_templates  = Credential_Meta::service_field_templates();
+
+if ( $can_manage ) {
+	include CREDENTIAL_VAULT_DIR . 'admin/views/vault-sudo-panel.php';
+}
+include CREDENTIAL_VAULT_DIR . 'admin/views/vault-rotation-guide.php';
+
+if ( $is_network && $network_available ?? false ) :
+	?>
+	<p class="description"><?php esc_html_e( 'Network credentials apply to all sites unless overridden by a site-scoped secret with the same slug.', 'credvault' ); ?></p>
+	<?php
+elseif ( ! $is_network && ! empty( $network_credentials ?? array() ) ) :
+	?>
+	<p class="description new-vault-inherit-hint">
+		<span class="new-vault-badge new-vault-badge--inherit"><?php esc_html_e( 'May inherit network', 'credvault' ); ?></span>
+		<?php esc_html_e( 'Missing site slugs can fall back to network-scoped secrets with the same name.', 'credvault' ); ?>
+	</p>
+	<?php
+endif;
+
+if ( $can_edit_secrets ) :
 	?>
 	<div class="card new-vault-add">
 		<h2>
@@ -49,28 +84,78 @@ if ( $api_available && $writable && $sudo_active ) :
 					<td>
 						<select name="credential_service" id="credential_service">
 							<?php foreach ( $presets as $key => $preset_label ) : ?>
-								<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $preset_label ); ?></option>
+								<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $prefill_service, $key ); ?>><?php echo esc_html( $preset_label ); ?></option>
 							<?php endforeach; ?>
 						</select>
 					</td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="credential_label"><?php esc_html_e( 'Label', 'credvault' ); ?></label></th>
-					<td><input name="credential_label" id="credential_label" type="text" class="regular-text" /></td>
+					<td><input name="credential_label" id="credential_label" type="text" class="regular-text" value="<?php echo esc_attr( $prefill_label ); ?>" /></td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="credential_slug"><?php esc_html_e( 'Slug', 'credvault' ); ?></label></th>
 					<td>
 						<code><?php echo esc_html( Secrets_Bridge::VAULT_NAMESPACE . '/' ); ?></code>
-						<input name="credential_slug" id="credential_slug" type="text" class="regular-text" pattern="[a-z0-9-]+" required />
+						<input name="credential_slug" id="credential_slug" type="text" class="regular-text" pattern="[a-z0-9-]+" required value="<?php echo esc_attr( $prefill_slug ); ?>" />
+					</td>
+				</tr>
+				<?php foreach ( $field_templates as $service_key => $fields ) : ?>
+					<?php foreach ( $fields as $field ) : ?>
+						<?php
+						$field_id = (string) ( $field['id'] ?? '' );
+						if ( '' === $field_id ) {
+							continue;
+						}
+						$input_name = 'credential_public_' . $field_id;
+						?>
+						<tr class="cv-service-field" data-cv-service="<?php echo esc_attr( $service_key ); ?>" hidden>
+							<th scope="row"><label for="<?php echo esc_attr( $input_name ); ?>"><?php echo esc_html( (string) ( $field['label'] ?? $field_id ) ); ?></label></th>
+							<td><input name="<?php echo esc_attr( $input_name ); ?>" id="<?php echo esc_attr( $input_name ); ?>" type="text" class="large-text" autocomplete="off" /></td>
+						</tr>
+					<?php endforeach; ?>
+				<?php endforeach; ?>
+				<tr>
+					<th scope="row"><label for="credential_value" id="credential_value_label"><?php esc_html_e( 'Secret value', 'credvault' ); ?></label></th>
+					<td><input name="credential_value" id="credential_value" type="password" class="large-text" autocomplete="off" required /></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="credential_environment"><?php esc_html_e( 'Environment', 'credvault' ); ?></label></th>
+					<td>
+						<select name="credential_environment" id="credential_environment">
+							<?php foreach ( Credential_Meta::environment_choices() as $env_key => $env_label ) : ?>
+								<option value="<?php echo esc_attr( $env_key ); ?>"><?php echo esc_html( $env_label ); ?></option>
+							<?php endforeach; ?>
+						</select>
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="credential_value"><?php esc_html_e( 'API key', 'credvault' ); ?></label></th>
-					<td><input name="credential_value" id="credential_value" type="password" class="large-text" autocomplete="off" required /></td>
+					<th scope="row"><label for="credential_rotate_by"><?php esc_html_e( 'Rotate by', 'credvault' ); ?></label></th>
+					<td>
+						<input name="credential_rotate_by" id="credential_rotate_by" type="date" />
+						<p class="description"><?php esc_html_e( 'Optional reminder date for agency rotation schedules.', 'credvault' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="credential_owner"><?php esc_html_e( 'Owner', 'credvault' ); ?></label></th>
+					<td><input name="credential_owner" id="credential_owner" type="text" class="regular-text" placeholder="<?php esc_attr_e( 'e.g. DevOps', 'credvault' ); ?>" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="credential_runbook_url"><?php esc_html_e( 'Runbook URL', 'credvault' ); ?></label></th>
+					<td><input name="credential_runbook_url" id="credential_runbook_url" type="url" class="large-text" placeholder="https://" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="credential_notes"><?php esc_html_e( 'Notes', 'credvault' ); ?></label></th>
+					<td><textarea name="credential_notes" id="credential_notes" class="large-text" rows="3" placeholder="<?php esc_attr_e( 'e.g. Used by WooCommerce Stripe', 'credvault' ); ?>"></textarea></td>
 				</tr>
 			</table>
-			<?php submit_button( __( 'Save to vault', 'credvault' ) ); ?>
+			<?php
+			submit_button(
+				$prefill_rotate || '' !== $prefill_slug
+					? __( 'Save rotated key', 'credvault' )
+					: __( 'Save to vault', 'credvault' )
+			);
+			?>
 		</form>
 	</div>
 	<?php

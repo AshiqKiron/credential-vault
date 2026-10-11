@@ -10,13 +10,12 @@ declare( strict_types=1 );
 namespace CredentialVault;
 
 /**
- * Short-lived sudo sessions per user (until core sudo mode lands).
+ * Short-lived sudo sessions per user, integrated with WP Sudo when available.
  */
 final class Sudo_Gate {
 
 	private const USER_META_EXPIRES = 'credential_vault_sudo_expires';
 
-	private const SESSION_LENGTH = 900; // 15 minutes.
 
 	private const MAX_ATTEMPTS = 5;
 
@@ -30,6 +29,10 @@ final class Sudo_Gate {
 
 		if ( $user_id <= 0 ) {
 			return false;
+		}
+
+		if ( self::core_sudo_active() ) {
+			return true;
 		}
 
 		$expires = (int) get_user_meta( $user_id, self::USER_META_EXPIRES, true );
@@ -46,6 +49,14 @@ final class Sudo_Gate {
 		}
 
 		$user_id = get_current_user_id();
+
+		if ( class_exists( '\WP_Sudo\Sudo_Session' ) ) {
+			$remaining = (int) \WP_Sudo\Sudo_Session::time_remaining( $user_id );
+			if ( $remaining > 0 ) {
+				return $remaining;
+			}
+		}
+
 		$expires = (int) get_user_meta( $user_id, self::USER_META_EXPIRES, true );
 
 		return max( 0, $expires - time() );
@@ -75,7 +86,11 @@ final class Sudo_Gate {
 		}
 
 		self::clear_failed_attempts( $user->ID );
-		update_user_meta( $user->ID, self::USER_META_EXPIRES, time() + self::SESSION_LENGTH );
+		update_user_meta( $user->ID, self::USER_META_EXPIRES, time() + Vault_Settings::sudo_ttl_seconds() );
+
+		if ( class_exists( '\WP_Sudo\Sudo_Session' ) ) {
+			\WP_Sudo\Sudo_Session::activate( $user->ID );
+		}
 
 		return true;
 	}
@@ -85,6 +100,10 @@ final class Sudo_Gate {
 
 		if ( $user_id > 0 ) {
 			delete_user_meta( $user_id, self::USER_META_EXPIRES );
+
+			if ( class_exists( '\WP_Sudo\Sudo_Session' ) ) {
+				\WP_Sudo\Sudo_Session::deactivate( $user_id );
+			}
 		}
 	}
 
@@ -96,9 +115,18 @@ final class Sudo_Gate {
 			return true;
 		}
 
+		$message = __( 'Confirm your password to view or change credentials.', 'credvault' );
+
+		/**
+		 * Message shown when vault sudo is required but no session is active.
+		 *
+		 * @param string $message Default message.
+		 */
+		$message = (string) apply_filters( 'credential_vault_sudo_required_message', $message );
+
 		return new \WP_Error(
 			'credential_vault_sudo_required',
-			__( 'Confirm your password to view or change credentials.', 'credvault' )
+			$message
 		);
 	}
 
@@ -129,5 +157,13 @@ final class Sudo_Gate {
 	private static function clear_failed_attempts( int $user_id ): void {
 		delete_transient( self::attempts_key( $user_id ) );
 		delete_transient( self::lockout_key( $user_id ) );
+	}
+
+	private static function core_sudo_active(): bool {
+		if ( function_exists( 'wp_sudo_check' ) ) {
+			return wp_sudo_check();
+		}
+
+		return false;
 	}
 }
