@@ -72,6 +72,11 @@ final class Plugin {
 		Audit_Pro::register();
 		Webhooks::register();
 		Manifest_Webhooks::register();
+		Webhook_Delivery_Log::register();
+		Rest_Idempotency::register();
+		Jit_Access::register();
+		Compromise_Playbook::register();
+		Remote_Health::register();
 
 		add_filter(
 			'credential_vault_admin_context',

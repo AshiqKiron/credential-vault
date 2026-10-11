@@ -41,7 +41,7 @@ final class Api_Tokens {
 	}
 
 	/**
-	 * @return list<array{id: string, label: string, caps: list<string>, slugs: list<string>, created: int, last_used: int}>
+	 * @return list<array{id: string, label: string, caps: list<string>, slugs: list<string>, created: int, last_used: int, ip_allowlist: list<string>}>
 	 */
 	public static function list_tokens(): array {
 		$stored = get_option( self::OPTION, array() );
@@ -61,7 +61,10 @@ final class Api_Tokens {
 				'caps'      => is_array( $row['caps'] ?? null ) ? array_values( array_map( 'strval', $row['caps'] ) ) : array( self::CAP_METADATA ),
 				'slugs'     => is_array( $row['slugs'] ?? null ) ? array_values( array_map( 'sanitize_key', $row['slugs'] ) ) : array(),
 				'created'   => (int) ( $row['created'] ?? 0 ),
-				'last_used' => (int) ( $row['last_used'] ?? 0 ),
+				'last_used'     => (int) ( $row['last_used'] ?? 0 ),
+				'ip_allowlist'  => is_array( $row['ip_allowlist'] ?? null )
+					? array_values( array_map( 'strval', $row['ip_allowlist'] ) )
+					: array(),
 			);
 		}
 
@@ -105,6 +108,10 @@ final class Api_Tokens {
 
 		$row = self::resolve_plaintext_token( $plain );
 		if ( null === $row ) {
+			return $user_id;
+		}
+
+		if ( ! self::client_ip_allowed( $row ) ) {
 			return $user_id;
 		}
 
@@ -223,6 +230,12 @@ final class Api_Tokens {
 			: array( self::CAP_METADATA );
 
 		$slugs = array_filter( array_map( 'sanitize_key', array_map( 'trim', explode( ',', $slugs_raw ) ) ) );
+		$ips_raw = isset( $_POST['token_ip_allowlist'] ) ? sanitize_text_field( (string) wp_unslash( $_POST['token_ip_allowlist'] ) ) : '';
+		$ip_allowlist = array_values(
+			array_filter(
+				array_map( 'trim', explode( ',', $ips_raw ) )
+			)
+		);
 
 		$plain = wp_generate_password( 48, false, false );
 		$id    = wp_generate_uuid4();
@@ -239,7 +252,8 @@ final class Api_Tokens {
 			'caps'      => array_values( array_unique( $caps ) ),
 			'slugs'     => array_values( $slugs ),
 			'created'   => time(),
-			'last_used' => 0,
+			'last_used'    => 0,
+			'ip_allowlist' => $ip_allowlist,
 		);
 
 		update_option( self::OPTION, $stored, false );
@@ -302,6 +316,58 @@ final class Api_Tokens {
 	 *
 	 * @return true|WP_Error
 	 */
+	/**
+	 * @param array<string, mixed> $row
+	 */
+	private static function client_ip_allowed( array $row ): bool {
+		$list = is_array( $row['ip_allowlist'] ?? null ) ? $row['ip_allowlist'] : array();
+		if ( empty( $list ) ) {
+			return true;
+		}
+
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : '';
+		if ( '' === $ip ) {
+			return false;
+		}
+
+		foreach ( $list as $rule ) {
+			$rule = trim( (string) $rule );
+			if ( '' === $rule ) {
+				continue;
+			}
+			if ( false !== strpos( $rule, '/' ) ) {
+				if ( self::ip_in_cidr( $ip, $rule ) ) {
+					return true;
+				}
+				continue;
+			}
+			if ( hash_equals( $rule, $ip ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static function ip_in_cidr( string $ip, string $cidr ): bool {
+		$parts = explode( '/', $cidr, 2 );
+		if ( 2 !== count( $parts ) ) {
+			return false;
+		}
+
+		$subnet = ip2long( $parts[0] );
+		$mask   = (int) $parts[1];
+		$long   = ip2long( $ip );
+		if ( false === $subnet || false === $long || $mask < 0 || $mask > 32 ) {
+			return false;
+		}
+
+		$mask_bin = -1 << ( 32 - $mask );
+		$mask_bin = $mask_bin & 0xFFFFFFFF;
+
+		return ( $long & $mask_bin ) === ( $subnet & $mask_bin );
+	}
+
 	public static function rest_require( WP_REST_Request $request, string $action, string $slug = '' ) {
 		$name = '' !== $slug ? Secrets_Bridge::secret_name( $slug ) : '';
 

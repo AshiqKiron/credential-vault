@@ -87,7 +87,46 @@ final class Secrets_Bridge {
 	 * @return list<array{name: string, fingerprint: string, created: int, has_previous: bool, needs_rotation: bool}>
 	 */
 	public static function list_vault_secrets( bool $network = false ): array {
-		return self::list_secrets( self::VAULT_NAMESPACE, $network );
+		if ( $network ) {
+			return self::list_secrets( self::VAULT_NAMESPACE, true );
+		}
+
+		if ( Test_Storage::enabled() && ! self::is_available() ) {
+			return self::list_vault_secrets_from_test_storage();
+		}
+
+		return self::list_secrets( self::VAULT_NAMESPACE, false );
+	}
+
+	/**
+	 * @return list<array{name: string, fingerprint: string, created: int, has_previous: bool, needs_rotation: bool}>
+	 */
+	private static function list_vault_secrets_from_test_storage(): array {
+		$prefix = self::VAULT_NAMESPACE . '/';
+		$rows   = array();
+		$now    = time();
+
+		foreach ( Test_Storage::site_slugs() as $slug ) {
+			$name = $prefix . sanitize_key( $slug );
+			if ( null === Test_Storage::get_value( $slug, false ) ) {
+				continue;
+			}
+
+			$meta           = Credential_Meta::get( $name );
+			$rotate_by      = is_array( $meta ) ? (int) ( $meta['rotate_by'] ?? 0 ) : 0;
+			$needs_rotation = $rotate_by > 0 && $rotate_by < $now;
+			$stored         = Test_Storage::get_value( $slug, false );
+
+			$rows[] = array(
+				'name'           => $name,
+				'fingerprint'    => is_string( $stored ) ? Demo_Data::fingerprint( $stored ) : '',
+				'created'        => 0,
+				'has_previous'   => $needs_rotation,
+				'needs_rotation' => $needs_rotation,
+			);
+		}
+
+		return $rows;
 	}
 
 	/**
@@ -410,6 +449,7 @@ final class Secrets_Bridge {
 				'runbook_url'     => $meta['runbook_url'] ?? '',
 				'public_fields'   => $meta['public_fields'] ?? array(),
 				'rotate_by'       => (int) ( $meta['rotate_by'] ?? 0 ),
+				'collection'      => (string) ( $meta['collection'] ?? '' ),
 				'fingerprint'     => (string) ( $row['fingerprint'] ?? '' ),
 				'needs_rotation'  => ! empty( $row['needs_rotation'] ),
 				'has_previous'    => ! empty( $row['has_previous'] ),

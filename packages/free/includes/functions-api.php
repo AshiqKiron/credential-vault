@@ -43,6 +43,7 @@ if ( ! function_exists( 'credential_vault_get' ) ) {
 			}
 
 			$source = isset( $context['source'] ) ? (string) $context['source'] : 'credential_vault_get_test';
+			$source = (string) apply_filters( 'credential_vault_normalize_query_source', $source, $context );
 			unset( $context['source'] );
 
 			Audit_Log::log_secret_queried(
@@ -104,6 +105,7 @@ if ( ! function_exists( 'credential_vault_get' ) ) {
 		}
 
 		$source = isset( $context['source'] ) ? (string) $context['source'] : 'credential_vault_get';
+		$source = (string) apply_filters( 'credential_vault_normalize_query_source', $source, $context );
 		unset( $context['source'] );
 
 		Audit_Log::log_secret_queried(
@@ -140,7 +142,13 @@ if ( ! function_exists( 'credential_vault_set' ) ) {
 		 */
 		$pre = apply_filters( 'pre_credential_vault_set', null, $slug, $value, $network, $meta );
 		if ( null !== $pre ) {
-			return $pre;
+			if ( is_wp_error( $pre ) ) {
+				return $pre;
+			}
+
+			credential_vault_persist_meta_after_set( $slug, $value, $network, $meta, 'credential_vault_set_test' );
+
+			return true;
 		}
 
 		if ( ! credential_vault_available() ) {
@@ -154,6 +162,18 @@ if ( ! function_exists( 'credential_vault_set' ) ) {
 			return $result;
 		}
 
+		credential_vault_persist_meta_after_set( $slug, $value, $network, $meta, 'credential_vault_set' );
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'credential_vault_persist_meta_after_set' ) ) {
+	/**
+	 * @param array<string, mixed> $meta
+	 */
+	function credential_vault_persist_meta_after_set( string $slug, string $value, bool $network, array $meta, string $source ): void {
+		$name    = Secrets_Bridge::secret_name( $slug );
 		$label   = isset( $meta['label'] ) ? (string) $meta['label'] : $slug;
 		$service = isset( $meta['service'] ) ? (string) $meta['service'] : 'custom';
 		$notes   = isset( $meta['notes'] ) ? (string) $meta['notes'] : '';
@@ -176,18 +196,20 @@ if ( ! function_exists( 'credential_vault_set' ) ) {
 			$public
 		);
 
-		Audit_Log::log_user_action(
-			'updated',
-			$name,
-			array(
-				'source'  => 'credential_vault_set',
-				'network' => $network,
-			)
+		$audit = array(
+			'source'  => $source,
+			'network' => $network,
 		);
+		if ( isset( $meta['old_fingerprint'] ) && is_string( $meta['old_fingerprint'] ) ) {
+			$audit['old_fingerprint'] = $meta['old_fingerprint'];
+		}
+		if ( isset( $meta['new_fingerprint'] ) && is_string( $meta['new_fingerprint'] ) ) {
+			$audit['new_fingerprint'] = $meta['new_fingerprint'];
+		}
+
+		Audit_Log::log_user_action( 'updated', $name, $audit );
 
 		Secrets_Bridge::memzero( $value );
-
-		return true;
 	}
 }
 

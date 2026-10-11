@@ -16,6 +16,7 @@ use CredentialVault\Plaintext_Scanner;
 use CredentialVault\Duplicate_Detector;
 use CredentialVault\Secrets_Bridge;
 use CredentialVault\Sudo_Gate;
+use CredentialVault\Test_Storage;
 use CredentialVault\Vault_Capabilities;
 use CredentialVault\Audit_Activity;
 use CredentialVault\Auditor_Experience;
@@ -129,21 +130,25 @@ final class Admin {
 			exit;
 		}
 
-		$can_manage    = Secrets_Bridge::current_user_can_manage();
-		$api_available = Secrets_Bridge::is_available();
+		$can_manage         = Secrets_Bridge::current_user_can_manage();
+		$api_available      = Secrets_Bridge::is_available();
+		$storage_available  = credential_vault_available();
+		$provider_writable  = ! function_exists( 'wp_secrets_provider_is_writable' ) || wp_secrets_provider_is_writable();
+		$writable           = $can_manage && $storage_available && ( ( Test_Storage::enabled() && ! $api_available ) || $provider_writable );
 
 		$context = array(
 			'can_manage'          => $can_manage,
 			'api_available'       => $api_available,
+			'storage_available'   => $storage_available,
 			'sudo_active'         => Sudo_Gate::is_active(),
 			'sudo_remaining'      => Sudo_Gate::remaining_seconds(),
 			'sudo_mode'           => Vault_Settings::sudo_mode(),
 			'vault_settings'      => Vault_Settings::get(),
-			'writable'            => $can_manage && $api_available && function_exists( 'wp_secrets_provider_is_writable' ) && wp_secrets_provider_is_writable(),
+			'writable'            => $writable,
 			'network_available'   => Secrets_Bridge::supports_network(),
 			'provider_label'      => Secrets_Bridge::provider_label(),
-			'credentials'         => $api_available ? Secrets_Bridge::list_vault_secrets( false ) : array(),
-			'network_credentials' => $api_available ? Secrets_Bridge::list_vault_secrets( true ) : array(),
+			'credentials'         => $storage_available ? Secrets_Bridge::list_vault_secrets( false ) : array(),
+			'network_credentials' => $storage_available ? Secrets_Bridge::list_vault_secrets( true ) : array(),
 			'external_secrets'    => $api_available ? Secrets_Bridge::list_external_secrets( false ) : array(),
 			'audit_entries'       => Audit_Log::entries(
 				(int) apply_filters( 'credential_vault_audit_page_limit', 100 ),
@@ -155,6 +160,7 @@ final class Admin {
 			'audit_filters'       => self::audit_filters_from_request(),
 			'pro_active'          => defined( 'CREDENTIAL_VAULT_PRO_VERSION' ),
 			'demo_data_ui'        => Demo_Data::ui_enabled(),
+			'demo_can_install'    => Demo_Data::can_install( $can_manage ),
 			'demo_data_installed' => Demo_Data::is_installed(),
 			'demo_data_count'     => count( Demo_Data::tracked_slugs() ),
 			'vault_health'        => Vault_Health::summary(),

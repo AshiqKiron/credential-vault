@@ -46,24 +46,26 @@ final class Hygiene_Scheduler {
 		$prev     = self::latest_snapshot();
 		$prev_sig = (string) ( $prev['signature'] ?? '' );
 
-		$scan_count = count( Plaintext_Scanner::scan() );
-		$dup_count  = count( Duplicate_Detector::find() );
-		$signature  = wp_hash( $scan_count . '|' . $dup_count );
+		$scan_count  = count( Plaintext_Scanner::scan() );
+		$dup_count   = count( Duplicate_Detector::find() );
+		$block_count = count( Block_Scanner::scan( 100 ) );
+		$signature   = wp_hash( $scan_count . '|' . $dup_count . '|' . $block_count );
 
 		$new_since = 0;
 		if ( '' !== $prev_sig && $signature !== $prev_sig ) {
-			$new_since = max( 0, ( $scan_count + $dup_count ) - (int) ( $prev['total'] ?? 0 ) );
+			$new_since = max( 0, ( $scan_count + $dup_count + $block_count ) - (int) ( $prev['total'] ?? 0 ) );
 		}
 
 		update_option(
 			self::OPTION,
 			array(
-				'last_run'        => time(),
-				'plaintext_count' => $scan_count,
-				'duplicate_count' => $dup_count,
-				'total'           => $scan_count + $dup_count,
-				'signature'       => $signature,
-				'new_since_last'  => $new_since,
+				'last_run'            => time(),
+				'plaintext_count'     => $scan_count,
+				'duplicate_count'     => $dup_count,
+				'block_content_count' => $block_count,
+				'total'               => $scan_count + $dup_count + $block_count,
+				'signature'           => $signature,
+				'new_since_last'      => $new_since,
 			),
 			false
 		);

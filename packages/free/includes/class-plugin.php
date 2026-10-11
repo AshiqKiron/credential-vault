@@ -34,6 +34,7 @@ final class Plugin {
 		Hygiene_Scheduler::register( $this->loader );
 		Plugin_Adapters::register( $this->loader );
 		Auditor_Experience::register( $this->loader );
+		Extended_Features::register( $this->loader );
 		Dev_Profile::register();
 		Test_Storage::register();
 		if ( is_admin() ) {
@@ -80,9 +81,9 @@ final class Plugin {
 		Audit_Log::register_hooks( $this->loader );
 		Sudo_Integration::register( $this->loader );
 		Admin\Vault_Actions::register( $this->loader );
-		Dashboard_Widget::register( $this->loader );
-		Admin_Bar_Sudo::register( $this->loader );
-		Menu_Badge::register( $this->loader );
+		Admin\Dashboard_Widget::register( $this->loader );
+		Admin\Admin_Bar_Sudo::register( $this->loader );
+		Admin\Menu_Badge::register( $this->loader );
 
 		$admin = new Admin\Admin();
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_assets' );

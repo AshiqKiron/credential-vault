@@ -42,30 +42,41 @@ final class Field_Help {
 			? sprintf( '<label for="%1$s">%2$s</label>', esc_attr( $for ), esc_html( $label ) )
 			: esc_html( $label );
 
-		return $label_html . self::icon( $tip );
+		return self::icon( $tip ) . $label_html;
 	}
 
 	/**
 	 * Inline label fragment (checkbox/radio rows).
 	 */
 	public static function inline( string $label, string $tip ): string {
-		return esc_html( $label ) . self::icon( $tip );
+		return '<span class="cv-field-label">' . self::icon( $tip ) . esc_html( $label ) . '</span>';
 	}
 
 	/**
 	 * Table column header with tooltip.
 	 */
 	public static function th_column( string $label, string $tip ): string {
-		return esc_html( $label ) . self::icon( $tip );
+		return self::icon( $tip ) . esc_html( $label );
+	}
+
+	/**
+	 * Section heading or summary: info icon before title text.
+	 */
+	public static function heading( string $title, string $tip ): string {
+		return self::icon( $tip ) . esc_html( $title );
 	}
 
 	public static function credential_tip( string $field ): string {
 		$tips = array(
+			'search'       => __( 'Matches the credential label or slug. Leave blank to show every credential in this list.', 'credvault' ),
+			'filter'       => __( 'Limit the list to overdue rotate-by dates, rotation flags, an active previous slot, or an environment mismatch.', 'credvault' ),
+			'sort'         => __( 'Order the list by label, slug, rotate-by date, or most recent vault activity.', 'credvault' ),
 			'service'      => __( 'Preset that adjusts the secret field label and optional public metadata fields (for example AWS access key ID).', 'credvault' ),
 			'label'        => __( 'Friendly name shown in the vault list and exports. Does not affect the slug used in code.', 'credvault' ),
 			'slug'         => __( 'Stable identifier after the app/ namespace. Use lowercase letters and hyphens only; referenced by credential_vault_get() and REST.', 'credvault' ),
 			'secret_value' => __( 'Encrypted value stored in the WordPress Secrets API. Never shown in the audit log or metadata export.', 'credvault' ),
 			'environment'  => __( 'Optional tag for production, staging, or local workflows. Shown as a badge on the dashboard.', 'credvault' ),
+			'collection'   => __( 'Optional group (payments, email, AI, and similar) for filtering and health views. Stored in metadata only.', 'credvault' ),
 			'rotate_by'    => __( 'Optional reminder date for agency rotation schedules. Does not rotate automatically; webhooks and emails may notify when this date passes.', 'credvault' ),
 			'owner'        => __( 'Team or person accountable for this credential (for example DevOps or client contact).', 'credvault' ),
 			'runbook_url'  => __( 'Link to internal docs or a runbook describing how to rotate or revoke this secret.', 'credvault' ),

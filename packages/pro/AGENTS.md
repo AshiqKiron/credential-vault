@@ -22,6 +22,8 @@ Distributable pro add-on. Bootstrap: `credential-vault-pro.php`. Namespace: `Cre
 
 ## Registered modules (`register_pro_features`)
 
+Keep this table aligned with `includes/class-plugin.php` when adding classes. Rough order: **persistence & policy** (`Audit_Store`, tokens, ACL, approvals, SSO) → **automation & imports** → **REST** (after stores exist) → **sudo audit UI** → **webhooks & ops** (delivery log, idempotency, JIT, compromise, remote health).
+
 | Module | Role |
 |--------|------|
 | `Audit_Store` | Append-only audit table, retention, SIEM JSONL stream |
@@ -46,6 +48,11 @@ Distributable pro add-on. Bootstrap: `credential-vault-pro.php`. Namespace: `Cre
 | `Audit_Pro` | Merges extended search/retention into free audit UI |
 | `Webhooks` | Outbound automation (`admin/views/automation-settings.php`) |
 | `Manifest_Webhooks` | Fires on **`credential_vault_manifest_validation_failed`** |
+| `Webhook_Delivery_Log` | Recent webhook attempts / event IDs (Automation UI) |
+| `Rest_Idempotency` | `Idempotency-Key` replay cache for mutating REST routes |
+| `Jit_Access` | Time-boxed reveal grants for non-super-admins |
+| `Compromise_Playbook` | Suspected-leak workflow (retire slots, operator notify) |
+| `Remote_Health` | Metadata-only health summary for external monitors (ManageWP/MainWP-style) |
 
 Admin JS context: filter **`credential_vault_admin_context`** (pro sets `pro_active`, optional `external_secrets`).
 

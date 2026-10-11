@@ -36,6 +36,8 @@ final class Onboarding {
 		$sudo = Sudo_Gate::is_active();
 		$has_secret = $api && count( Secrets_Bridge::list_vault_secrets( false ) ) > 0;
 		$imported = $api && count( Plaintext_Scanner::scan() ) === 0;
+		$audit    = count( Audit_Log::entries( 1, array() ) ) > 0;
+		$tested   = $api && self::has_rotation_test_audit();
 
 		return array(
 			array(
@@ -58,7 +60,31 @@ final class Onboarding {
 				'done'  => $imported,
 				'label' => __( 'No plaintext scanner hits (optional)', 'credvault' ),
 			),
+			array(
+				'key'   => 'rotation_test',
+				'done'  => $tested,
+				'label' => __( 'At least one rotation smoke test logged (optional)', 'credvault' ),
+			),
+			array(
+				'key'   => 'audit',
+				'done'  => $audit,
+				'label' => __( 'Audit log has activity', 'credvault' ),
+			),
 		);
+	}
+
+	private static function has_rotation_test_audit(): bool {
+		foreach ( Audit_Log::entries( 50, array() ) as $entry ) {
+			if ( ! is_array( $entry ) ) {
+				continue;
+			}
+			$action = sanitize_key( (string) ( $entry['action'] ?? '' ) );
+			if ( in_array( $action, array( 'rotate', 'rotated', 'rotation_test' ), true ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static function progress_percent(): int {

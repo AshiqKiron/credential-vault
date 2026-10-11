@@ -23,6 +23,7 @@ final class Credentials_Filter {
 		$search   = isset( $query['cv_search'] ) ? sanitize_text_field( (string) $query['cv_search'] ) : '';
 		$env      = isset( $query['cv_env'] ) ? sanitize_key( (string) $query['cv_env'] ) : '';
 		$filter   = isset( $query['cv_filter'] ) ? sanitize_key( (string) $query['cv_filter'] ) : '';
+		$collection = isset( $query['cv_collection'] ) ? sanitize_key( (string) $query['cv_collection'] ) : '';
 		$sort     = isset( $query['cv_sort'] ) ? sanitize_key( (string) $query['cv_sort'] ) : 'label';
 		$activity = Audit_Activity::index_by_secret();
 
@@ -56,6 +57,13 @@ final class Credentials_Filter {
 			}
 			if ( 'env_mismatch' === $filter && null === Environment_Guard::mismatch_for_secret( $name ) ) {
 				continue;
+			}
+
+			if ( '' !== $collection ) {
+				$row_collection = is_array( $meta ) ? (string) ( $meta['collection'] ?? '' ) : '';
+				if ( $collection !== $row_collection ) {
+					continue;
+				}
 			}
 
 			$row['_cv_label']     = $label;

@@ -41,12 +41,9 @@ $hygiene_issues = $hygiene_issues ?? array();
 				<tr>
 					<td>
 						<span class="new-vault-heading-tip">
-							<?php echo esc_html( (string) ( $issue['label'] ?? '' ) ); ?>
 							<?php
 							$detail = (string) ( $issue['detail'] ?? '' );
-							if ( '' !== $detail ) {
-								echo Field_Help::icon( $detail );
-							}
+							echo Field_Help::heading( (string) ( $issue['label'] ?? '' ), $detail );
 							?>
 						</span>
 					</td>

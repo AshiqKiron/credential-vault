@@ -19,6 +19,23 @@ final class License_Seats {
 	public static function register(): void {
 		add_action( 'admin_post_credential_vault_pro_save_license', array( self::class, 'handle_save' ) );
 		add_filter( 'credential_vault_admin_context', array( self::class, 'inject_context' ) );
+		add_filter( 'credential_vault_user_can', array( self::class, 'enforce_read_only_over_limit' ), 5, 4 );
+	}
+
+	/**
+	 * @param bool $allowed
+	 */
+	public static function enforce_read_only_over_limit( $allowed, string $action, string $secret_name, bool $network ): bool {
+		unset( $secret_name, $network );
+		if ( ! $allowed || self::within_limits() ) {
+			return $allowed;
+		}
+
+		if ( in_array( $action, array( 'reveal', 'rotate', 'delete', 'manage' ), true ) ) {
+			return false;
+		}
+
+		return $allowed;
 	}
 
 	/**

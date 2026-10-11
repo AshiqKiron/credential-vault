@@ -21,9 +21,9 @@ $steps = Rotation_Workflow::steps();
 ?>
 <details class="card new-vault-rotation">
 	<summary class="new-vault-heading-tip">
-		<?php esc_html_e( 'Key rotation workflow', 'credvault' ); ?>
 		<?php
-		echo Field_Help::icon(
+		echo Field_Help::heading(
+			__( 'Key rotation workflow', 'credvault' ),
 			__( 'Save with an existing slug to rotate without downtime. Stripe and OpenAI slugs get optional smoke tests after save.', 'credvault' )
 		);
 		?>

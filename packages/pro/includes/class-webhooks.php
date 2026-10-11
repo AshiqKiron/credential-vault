@@ -233,6 +233,12 @@ final class Webhooks {
 	 * @param array<string, mixed> $payload
 	 */
 	private static function dispatch( string $url, string $secret, array $payload, string $format = 'generic' ): void {
+		$event_id = wp_generate_uuid4();
+		if ( Webhook_Delivery_Log::seen_event_id( $event_id ) ) {
+			return;
+		}
+
+		$payload['event_id'] = $event_id;
 		$body = wp_json_encode( $payload );
 		if ( ! is_string( $body ) ) {
 			return;
@@ -275,14 +281,20 @@ final class Webhooks {
 			$headers['X-Credential-Vault-Signature'] = hash_hmac( 'sha256', $body, $secret );
 		}
 
-		wp_remote_post(
+		$headers['X-Credential-Vault-Event-Id'] = $event_id;
+
+		$response = wp_remote_post(
 			$url,
 			array(
-				'timeout'  => 5,
-				'blocking' => false,
+				'timeout'  => 8,
+				'blocking' => true,
 				'headers'  => $headers,
 				'body'     => $body,
 			)
 		);
+
+		$code    = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
+		$success = ! is_wp_error( $response ) && $code >= 200 && $code < 300;
+		Webhook_Delivery_Log::record( $url, $event_id, $payload, $code, $success );
 	}
 }

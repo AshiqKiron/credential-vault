@@ -117,7 +117,7 @@ if ( $can_edit_secrets ) :
 					<?php endforeach; ?>
 				<?php endforeach; ?>
 				<tr>
-					<th scope="row"><label for="credential_value" id="credential_value_label"><?php esc_html_e( 'Secret value', 'credvault' ); ?></label><?php echo Field_Help::icon( Field_Help::credential_tip( 'secret_value' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
+					<th scope="row"><?php echo Field_Help::th( __( 'Secret value', 'credvault' ), Field_Help::credential_tip( 'secret_value' ), 'credential_value' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 					<td><input name="credential_value" id="credential_value" type="password" class="large-text" autocomplete="off" required /></td>
 				</tr>
 				<tr>

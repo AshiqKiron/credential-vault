@@ -53,14 +53,19 @@ $extra_tabs = apply_filters( 'credential_vault_admin_tabs', array() );
 
 	<?php include CREDENTIAL_VAULT_DIR . 'admin/views/vault-features-overview.php'; ?>
 
-	<?php if ( ! $api_available ) : ?>
+	<?php if ( ! $api_available && empty( $storage_available ) ) : ?>
 		<div class="notice notice-warning">
 			<p>
 				<?php esc_html_e( 'Install WordPress 7.2 or the Secrets API feature plugin to enable encrypted credential storage.', 'credvault' ); ?>
 				<a href="https://github.com/ericmann/secrets-api" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Secrets API on GitHub', 'credvault' ); ?></a>
 			</p>
 		</div>
-	<?php else : ?>
+	<?php elseif ( ! $api_available && ! empty( $storage_available ) ) : ?>
+		<div class="notice notice-info">
+			<p><?php esc_html_e( 'Secrets API is not installed; using in-memory dev storage on this site (enable WP_DEBUG or local environment).', 'credvault' ); ?></p>
+		</div>
+	<?php endif; ?>
+	<?php if ( $api_available || ! empty( $storage_available ) ) : ?>
 		<p class="new-vault-meta">
 			<strong><?php esc_html_e( 'Storage:', 'credvault' ); ?></strong>
 			<?php echo esc_html( $provider_label ); ?>

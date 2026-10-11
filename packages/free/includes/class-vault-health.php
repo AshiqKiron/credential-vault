@@ -34,6 +34,15 @@ final class Vault_Health {
 		$dup_count   = $available ? count( Duplicate_Detector::find() ) : 0;
 		$config_hits = count( Config_Constant_Scanner::scan() );
 		$env_issues  = $available ? count( Environment_Guard::find_mismatches() ) : 0;
+		$block_hits  = count( Block_Scanner::scan( 100 ) );
+		$low_scores  = 0;
+		if ( $available ) {
+			foreach ( Secret_Health_Scores::all_site() as $score_row ) {
+				if ( (int) ( $score_row['score'] ?? 100 ) < 60 ) {
+					++$low_scores;
+				}
+			}
+		}
 
 		return array(
 			'api_available'          => $available,
@@ -47,6 +56,8 @@ final class Vault_Health {
 			'duplicate_hygiene'      => $dup_count,
 			'environment_mismatches' => $env_issues,
 			'config_constant_hits'   => $config_hits,
+			'block_content_hits'     => $block_hits,
+			'low_health_secrets'     => $low_scores,
 			'hygiene_last_run'       => (int) ( $hygiene['last_run'] ?? 0 ),
 			'hygiene_new_findings'   => (int) ( $hygiene['new_since_last'] ?? 0 ),
 			'audit_near_capacity'    => self::audit_near_capacity(),

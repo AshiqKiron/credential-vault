@@ -80,7 +80,7 @@ $settings = $vault_settings ?? Vault_Settings::get();
 $demo_ui        = ! empty( $demo_data_ui );
 $demo_installed = ! empty( $demo_data_installed );
 $demo_count     = isset( $demo_data_count ) ? (int) $demo_data_count : 0;
-$can_demo       = $demo_ui && ! empty( $api_available ) && ! empty( $writable );
+$can_demo       = ! empty( $demo_can_install );
 ?>
 <?php if ( $demo_ui ) : ?>
 <div class="card new-vault-settings">
@@ -90,7 +90,7 @@ $can_demo       = $demo_ui && ! empty( $api_available ) && ! empty( $writable );
 	</p>
 	<?php if ( ! $can_demo ) : ?>
 		<p class="description">
-			<?php esc_html_e( 'Demo install requires the Secrets API and a writable provider.', 'credvault' ); ?>
+			<?php esc_html_e( 'Demo install requires storage (Secrets API or local dev mode with WP_DEBUG) and manage access.', 'credvault' ); ?>
 		</p>
 	<?php else : ?>
 		<?php if ( $demo_installed ) : ?>
@@ -104,15 +104,16 @@ $can_demo       = $demo_ui && ! empty( $api_available ) && ! empty( $writable );
 				?>
 			</p>
 		<?php endif; ?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-right:8px;">
-			<?php wp_nonce_field( 'credential_vault_install_demo' ); ?>
-			<input type="hidden" name="action" value="credential_vault_install_demo" />
-			<?php submit_button( __( 'Install demo data', 'credvault' ), 'secondary', '', false ); ?>
-		</form>
+		<?php
+		$redirect_tab = 'settings';
+		$button_style = 'secondary';
+		include CREDENTIAL_VAULT_DIR . 'admin/partials/vault-demo-install-form.php';
+		?>
 		<?php if ( $demo_installed ) : ?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;" onsubmit="return confirm('<?php echo esc_js( __( 'Remove all tracked demo credentials?', 'credvault' ) ); ?>');">
 				<?php wp_nonce_field( 'credential_vault_remove_demo' ); ?>
 				<input type="hidden" name="action" value="credential_vault_remove_demo" />
+				<input type="hidden" name="redirect_tab" value="settings" />
 				<?php submit_button( __( 'Remove demo data', 'credvault' ), 'delete', '', false ); ?>
 			</form>
 		<?php endif; ?>

@@ -30,6 +30,75 @@ final class Demo_Data {
 		return (bool) apply_filters( 'credential_vault_demo_data_ui', true );
 	}
 
+	/**
+	 * Whether the current user can install or remove demo fixtures from admin.
+	 */
+	public static function can_install( bool $can_manage ): bool {
+		if ( ! $can_manage || ! self::ui_enabled() ) {
+			return false;
+		}
+
+		if ( ! credential_vault_available() ) {
+			return false;
+		}
+
+		return self::storage_writable();
+	}
+
+	public static function skip_sudo_for_install(): bool {
+		/**
+		 * Skip sudo gate for demo install/remove (local exploration).
+		 *
+		 * @param bool $skip Default false.
+		 */
+		return (bool) apply_filters( 'credential_vault_skip_sudo_for_demo_install', false );
+	}
+
+	/**
+	 * SHA-256 fingerprint of a secret value (never stored as plaintext in the audit log).
+	 */
+	public static function fingerprint( string $value ): string {
+		return hash( 'sha256', $value );
+	}
+
+	/**
+	 * Append an audit row with fingerprints when this demo secret has none yet.
+	 *
+	 * @param array{slug?: string, value?: string, meta?: array<string, mixed>} $fixture
+	 */
+	private static function log_fingerprint_audit( string $name, string $slug, string $value, array $fixture ): void {
+		foreach ( Audit_Log::entries( 200, array( 'secret' => $name ) ) as $entry ) {
+			if ( '' !== (string) ( $entry['new_fingerprint'] ?? '' ) ) {
+				return;
+			}
+		}
+
+		$meta = isset( $fixture['meta'] ) && is_array( $fixture['meta'] ) ? $fixture['meta'] : array();
+		$extra = array(
+			'source'          => 'demo_data',
+			'network'         => false,
+			'new_fingerprint' => self::fingerprint( $value ),
+		);
+		$rotate_by = isset( $meta['rotate_by'] ) ? (int) $meta['rotate_by'] : 0;
+		if ( $rotate_by > 0 && $rotate_by < time() ) {
+			$extra['old_fingerprint'] = self::fingerprint( 'previous:' . $slug );
+		}
+
+		Audit_Log::log_user_action( 'updated', $name, $extra );
+	}
+
+	private static function storage_writable(): bool {
+		if ( Test_Storage::enabled() && ! Secrets_Bridge::is_available() ) {
+			return true;
+		}
+
+		if ( function_exists( 'wp_secrets_provider_is_writable' ) ) {
+			return wp_secrets_provider_is_writable();
+		}
+
+		return Secrets_Bridge::is_available();
+	}
+
 	public static function is_installed(): bool {
 		return ! empty( self::tracked_slugs() );
 	}
@@ -151,11 +220,11 @@ final class Demo_Data {
 	 * @return array{installed: int, skipped: int}|\WP_Error
 	 */
 	public static function install() {
-		if ( ! Secrets_Bridge::is_available() ) {
+		if ( ! credential_vault_available() ) {
 			return new \WP_Error( 'credential_vault_demo_no_api', __( 'The Secrets API is not available.', 'credvault' ) );
 		}
 
-		if ( function_exists( 'wp_secrets_provider_is_writable' ) && ! wp_secrets_provider_is_writable() ) {
+		if ( ! self::storage_writable() ) {
 			return new \WP_Error( 'credential_vault_demo_readonly', __( 'Demo data requires a writable secrets provider.', 'credvault' ) );
 		}
 
@@ -170,12 +239,13 @@ final class Demo_Data {
 			}
 
 			$name     = Secrets_Bridge::secret_name( $slug );
-			$existing = Secrets_Bridge::get_secret( $name );
-			if ( ! is_wp_error( $existing ) && null !== $existing ) {
+			$existing = credential_vault_get( $slug, false, array( 'source' => 'demo_data_install_check' ) );
+			if ( null !== $existing ) {
 				++$skipped;
 				if ( ! in_array( $slug, $tracked, true ) ) {
 					$tracked[] = $slug;
 				}
+				self::log_fingerprint_audit( $name, $slug, $existing, $fixture );
 				continue;
 			}
 
@@ -184,6 +254,12 @@ final class Demo_Data {
 
 			if ( '' === $value ) {
 				continue;
+			}
+
+			$meta['new_fingerprint'] = self::fingerprint( $value );
+			$rotate_by               = isset( $meta['rotate_by'] ) ? (int) $meta['rotate_by'] : 0;
+			if ( $rotate_by > 0 && $rotate_by < time() ) {
+				$meta['old_fingerprint'] = self::fingerprint( 'previous:' . $slug );
 			}
 
 			$result = credential_vault_set( $slug, $value, false, $meta );
@@ -209,11 +285,11 @@ final class Demo_Data {
 	 * @return array{removed: int}|\WP_Error
 	 */
 	public static function remove() {
-		if ( ! Secrets_Bridge::is_available() ) {
+		if ( ! credential_vault_available() ) {
 			return new \WP_Error( 'credential_vault_demo_no_api', __( 'The Secrets API is not available.', 'credvault' ) );
 		}
 
-		if ( function_exists( 'wp_secrets_provider_is_writable' ) && ! wp_secrets_provider_is_writable() ) {
+		if ( ! self::storage_writable() ) {
 			return new \WP_Error( 'credential_vault_demo_readonly', __( 'Removing demo data requires a writable secrets provider.', 'credvault' ) );
 		}
 
@@ -221,9 +297,13 @@ final class Demo_Data {
 		foreach ( self::tracked_slugs() as $slug ) {
 			$name = Secrets_Bridge::secret_name( $slug );
 
-			$result = Secrets_Bridge::delete_secret( $name, false );
-			if ( is_wp_error( $result ) ) {
-				return $result;
+			if ( Test_Storage::enabled() && ! Secrets_Bridge::is_available() ) {
+				Test_Storage::forget( $slug, false );
+			} else {
+				$result = Secrets_Bridge::delete_secret( $name, false );
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
 			}
 
 			Credential_Meta::delete( $name );

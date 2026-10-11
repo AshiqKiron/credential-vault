@@ -95,96 +95,128 @@ final class Credential_Meta {
 	}
 
 	/**
+	 * Token dashboard groups in display order.
+	 *
+	 * @return array<string, string> Group slug => label.
+	 */
+	public static function integration_groups(): array {
+		return array(
+			'payments'  => __( 'Payments', 'credvault' ),
+			'email'     => __( 'Email', 'credvault' ),
+			'cloud'     => __( 'Cloud', 'credvault' ),
+			'ai'        => __( 'AI', 'credvault' ),
+			'messaging' => __( 'Messaging', 'credvault' ),
+			'security'  => __( 'Security', 'credvault' ),
+			'developer' => __( 'Developer', 'credvault' ),
+			'maps'      => __( 'Maps', 'credvault' ),
+			'other'     => __( 'Other', 'credvault' ),
+		);
+	}
+
+	/**
 	 * First-party integration keys shown on the centralized token dashboard.
 	 *
-	 * @return list<array{service: string, label: string, slug: string, description: string}>
+	 * @return list<array{service: string, label: string, slug: string, description: string, group: string}>
 	 */
 	public static function token_integrations(): array {
 		$integrations = array(
 			array(
 				'service'     => 'stripe',
+				'group'       => 'payments',
 				'label'       => 'Stripe',
 				'slug'        => 'stripe-api-key',
 				'description' => __( 'Secret or restricted API key for Stripe payments and billing.', 'credvault' ),
 			),
 			array(
-				'service'     => 'openai',
-				'label'       => 'OpenAI',
-				'slug'        => 'openai-api-key',
-				'description' => __( 'API key for OpenAI models and embeddings.', 'credvault' ),
-			),
-			array(
-				'service'     => 'aws',
-				'label'       => 'AWS',
-				'slug'        => 'aws-secret-access-key',
-				'description' => __( 'Secret access key (store alongside IAM access key ID in a separate credential if needed).', 'credvault' ),
-			),
-			array(
 				'service'     => 'mailchimp',
+				'group'       => 'email',
 				'label'       => 'Mailchimp',
 				'slug'        => 'mailchimp-api-key',
 				'description' => __( 'Mailchimp Marketing API key for lists and campaigns.', 'credvault' ),
 			),
 			array(
 				'service'     => 'sendgrid',
+				'group'       => 'email',
 				'label'       => 'SendGrid',
 				'slug'        => 'sendgrid-api-key',
 				'description' => __( 'Transactional email API keys.', 'credvault' ),
 			),
 			array(
-				'service'     => 'recaptcha',
-				'label'       => 'Google reCAPTCHA',
-				'slug'        => 'recaptcha-secret-key',
-				'description' => __( 'Secret keys for spam protection on forms.', 'credvault' ),
-			),
-			array(
-				'service'     => 'twilio',
-				'label'       => 'Twilio',
-				'slug'        => 'twilio-auth-token',
-				'description' => __( 'Auth token for SMS and voice APIs.', 'credvault' ),
-			),
-			array(
 				'service'     => 'postmark',
+				'group'       => 'email',
 				'label'       => 'Postmark',
 				'slug'        => 'postmark-server-token',
 				'description' => __( 'Server token for transactional email.', 'credvault' ),
 			),
 			array(
-				'service'     => 'slack',
-				'label'       => 'Slack',
-				'slug'        => 'slack-signing-secret',
-				'description' => __( 'Signing secret for incoming Slack webhooks and Events API.', 'credvault' ),
-			),
-			array(
-				'service'     => 'github',
-				'label'       => 'GitHub',
-				'slug'        => 'github-pat',
-				'description' => __( 'Personal access token for repos and Actions.', 'credvault' ),
+				'service'     => 'aws',
+				'group'       => 'cloud',
+				'label'       => 'AWS',
+				'slug'        => 'aws-secret-access-key',
+				'description' => __( 'Secret access key (store alongside IAM access key ID in a separate credential if needed).', 'credvault' ),
 			),
 			array(
 				'service'     => 'cloudflare',
+				'group'       => 'cloud',
 				'label'       => 'Cloudflare',
 				'slug'        => 'cloudflare-api-key',
 				'description' => __( 'Global API key or token for DNS and CDN.', 'credvault' ),
 			),
 			array(
-				'service'     => 'googlemaps',
-				'label'       => 'Google Maps',
-				'slug'        => 'google-maps-api-key',
-				'description' => __( 'Browser or server key for Maps JavaScript / Geocoding.', 'credvault' ),
+				'service'     => 'openai',
+				'group'       => 'ai',
+				'label'       => 'OpenAI',
+				'slug'        => 'openai-api-key',
+				'description' => __( 'API key for OpenAI models and embeddings.', 'credvault' ),
+			),
+			array(
+				'service'     => 'slack',
+				'group'       => 'messaging',
+				'label'       => 'Slack',
+				'slug'        => 'slack-signing-secret',
+				'description' => __( 'Signing secret for incoming Slack webhooks and Events API.', 'credvault' ),
+			),
+			array(
+				'service'     => 'twilio',
+				'group'       => 'messaging',
+				'label'       => 'Twilio',
+				'slug'        => 'twilio-auth-token',
+				'description' => __( 'Auth token for SMS and voice APIs.', 'credvault' ),
+			),
+			array(
+				'service'     => 'recaptcha',
+				'group'       => 'security',
+				'label'       => 'Google reCAPTCHA',
+				'slug'        => 'recaptcha-secret-key',
+				'description' => __( 'Secret keys for spam protection on forms.', 'credvault' ),
 			),
 			array(
 				'service'     => 'oauth',
+				'group'       => 'security',
 				'label'       => 'OAuth client',
 				'slug'        => 'oauth-client-secret',
 				'description' => __( 'Client secret half of an OAuth application pair.', 'credvault' ),
+			),
+			array(
+				'service'     => 'github',
+				'group'       => 'developer',
+				'label'       => 'GitHub',
+				'slug'        => 'github-pat',
+				'description' => __( 'Personal access token for repos and Actions.', 'credvault' ),
+			),
+			array(
+				'service'     => 'googlemaps',
+				'group'       => 'maps',
+				'label'       => 'Google Maps',
+				'slug'        => 'google-maps-api-key',
+				'description' => __( 'Browser or server key for Maps JavaScript / Geocoding.', 'credvault' ),
 			),
 		);
 
 		/**
 		 * Filter integrations on the token dashboard.
 		 *
-		 * @param list<array{service: string, label: string, slug: string, description: string}> $integrations
+		 * @param list<array{service: string, label: string, slug: string, description: string, group: string}> $integrations
 		 */
 		return apply_filters( 'credential_vault_token_integrations', $integrations );
 	}
@@ -253,7 +285,24 @@ final class Credential_Meta {
 	}
 
 	/**
-	 * @return array{label: string, service: string, masked_preview: string, notes: string, owner: string, runbook_url: string, public_fields: array<string, string>, environment: string, rotate_by: int}|null
+	 * @return list<string> Fully qualified secret names under a namespace prefix (e.g. credential-vault/).
+	 */
+	public static function list_names_with_prefix( string $prefix ): array {
+		$names = array();
+		foreach ( array_keys( self::all() ) as $name ) {
+			$key = (string) $name;
+			if ( '' !== $key && 0 === strpos( $key, $prefix ) ) {
+				$names[] = $key;
+			}
+		}
+
+		sort( $names );
+
+		return $names;
+	}
+
+	/**
+	 * @return array{label: string, service: string, masked_preview: string, notes: string, owner: string, runbook_url: string, public_fields: array<string, string>, environment: string, rotate_by: int, collection: string}|null
 	 */
 	public static function get( string $secret_name ): ?array {
 		$all = self::all();
@@ -328,7 +377,8 @@ final class Credential_Meta {
 		int $rotate_by,
 		string $owner = '',
 		string $runbook_url = '',
-		array $public_fields = array()
+		array $public_fields = array(),
+		string $collection = ''
 	): void {
 		$all = self::all();
 		if ( ! isset( $all[ $secret_name ] ) || ! is_array( $all[ $secret_name ] ) ) {
@@ -350,6 +400,7 @@ final class Credential_Meta {
 		$row['public_fields'] = self::sanitize_public_fields( $public_fields );
 		$row['environment']   = self::sanitize_environment( $environment );
 		$row['rotate_by']     = max( 0, $rotate_by );
+		$row['collection']    = Secret_Collections::sanitize( $collection );
 
 		$all[ $secret_name ] = $row;
 		update_option( self::OPTION, $all, false );
@@ -396,6 +447,7 @@ final class Credential_Meta {
 			'public_fields'  => is_array( $public ) ? self::sanitize_public_fields( $public ) : array(),
 			'environment'    => self::sanitize_environment( (string) ( $row['environment'] ?? '' ) ),
 			'rotate_by'      => max( 0, (int) ( $row['rotate_by'] ?? 0 ) ),
+			'collection'     => Secret_Collections::sanitize( (string) ( $row['collection'] ?? '' ) ),
 		);
 	}
 

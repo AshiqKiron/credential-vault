@@ -7,9 +7,11 @@ alwaysApply: false
 # WordPress PHP (packages)
 
 - Edit shippable code under `packages/free/` or `packages/pro/` only.
+- Free admin classes: namespace `CredentialVault\Admin\` under `packages/free/admin/`.
 - Use `declare( strict_types=1 );`, WordPress coding standards, and `$wpdb->prepare()` for SQL.
 - Escape on output (`esc_html`, `esc_attr`, `esc_url`), sanitize on input, verify nonces and capabilities in admin/AJAX/REST.
-- Secrets: read/write only via `CredentialVault\Secrets_Bridge`; audit programmatic reads; respect `credential_vault_user_can` and sudo gates.
+- Secrets: read/write only via `CredentialVault\Secrets_Bridge` or `credential_vault_get()` / `credential_vault_set()`; audit reads (`Query_Source` / `source` context); respect `credential_vault_user_can` and sudo gates. Test doubles use `pre_credential_vault_get` / `pre_credential_vault_set` and `CREDENTIAL_VAULT_TEST_MODE`, not a parallel store.
+- New hook-based free modules: register from `CredentialVault\Extended_Features::register()`.
 - Hook pro code on `credential_vault_loaded`; register new pro modules in `CredentialVaultPro\Plugin::register_pro_features()`.
 - Text domains: `credvault` (free), `credential-vault-pro` (pro).
 - After substantive changes, suggest `composer phpcs` on `packages/`.

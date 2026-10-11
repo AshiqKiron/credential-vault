@@ -14,11 +14,15 @@ namespace CredentialVault;
  */
 final class Test_Storage {
 
+	private const VALUES_OPTION = 'credential_vault_test_secret_values';
+
 	/** @var array<string, string> slug => value (site scope). */
 	private static array $site = array();
 
 	/** @var array<string, string> slug => value (network scope). */
 	private static array $network = array();
+
+	private static bool $hydrated = false;
 
 	public static function register(): void {
 		add_filter( 'credential_vault_test_mode', array( self::class, 'default_test_mode' ) );
@@ -44,6 +48,7 @@ final class Test_Storage {
 	}
 
 	public static function get_value( string $slug, bool $network ): ?string {
+		self::hydrate();
 		$slug  = sanitize_key( $slug );
 		$store = $network ? self::$network : self::$site;
 
@@ -77,7 +82,8 @@ final class Test_Storage {
 			return $pre;
 		}
 
-		$slug = sanitize_key( $slug );
+		self::hydrate();
+		$slug  = sanitize_key( $slug );
 		$store = $network ? self::$network : self::$site;
 
 		return array_key_exists( $slug, $store ) ? $store[ $slug ] : null;
@@ -97,6 +103,7 @@ final class Test_Storage {
 			return $pre;
 		}
 
+		self::hydrate();
 		$slug = sanitize_key( $slug );
 		if ( $network ) {
 			self::$network[ $slug ] = $value;
@@ -104,11 +111,79 @@ final class Test_Storage {
 			self::$site[ $slug ] = $value;
 		}
 
+		self::persist();
+
 		return true;
 	}
 
 	public static function reset(): void {
-		self::$site    = array();
-		self::$network = array();
+		self::$site     = array();
+		self::$network  = array();
+		self::$hydrated = true;
+		delete_option( self::VALUES_OPTION );
+	}
+
+	public static function forget( string $slug, bool $network ): void {
+		self::hydrate();
+		$slug = sanitize_key( $slug );
+		if ( $network ) {
+			unset( self::$network[ $slug ] );
+		} else {
+			unset( self::$site[ $slug ] );
+		}
+
+		self::persist();
+	}
+
+	/**
+	 * @return list<string> Vault slugs stored in test mode (site scope).
+	 */
+	public static function site_slugs(): array {
+		self::hydrate();
+
+		return array_keys( self::$site );
+	}
+
+	private static function hydrate(): void {
+		if ( self::$hydrated ) {
+			return;
+		}
+
+		self::$hydrated = true;
+		$stored         = get_option( self::VALUES_OPTION, array() );
+		if ( ! is_array( $stored ) ) {
+			return;
+		}
+
+		$site = $stored['site'] ?? array();
+		if ( is_array( $site ) ) {
+			foreach ( $site as $slug => $value ) {
+				$key = sanitize_key( (string) $slug );
+				if ( '' !== $key && is_string( $value ) ) {
+					self::$site[ $key ] = $value;
+				}
+			}
+		}
+
+		$network = $stored['network'] ?? array();
+		if ( is_array( $network ) ) {
+			foreach ( $network as $slug => $value ) {
+				$key = sanitize_key( (string) $slug );
+				if ( '' !== $key && is_string( $value ) ) {
+					self::$network[ $key ] = $value;
+				}
+			}
+		}
+	}
+
+	private static function persist(): void {
+		update_option(
+			self::VALUES_OPTION,
+			array(
+				'site'    => self::$site,
+				'network' => self::$network,
+			),
+			false
+		);
 	}
 }

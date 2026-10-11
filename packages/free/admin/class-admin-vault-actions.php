@@ -20,6 +20,7 @@ use CredentialVault\Onboarding;
 use CredentialVault\Secrets_Manifest;
 use CredentialVault\Sudo_Gate;
 use CredentialVault\Vault_Bundle;
+use CredentialVault\Secret_Collections;
 use CredentialVault\Vault_Settings;
 
 /**
@@ -436,7 +437,8 @@ final class Vault_Actions {
 			self::posted_rotate_by(),
 			self::posted_owner(),
 			self::posted_runbook_url(),
-			self::posted_public_fields( $service )
+			self::posted_public_fields( $service ),
+			self::posted_collection()
 		);
 
 		self::redirect_tab( 'vault_notice=meta_saved', $network ? 'network' : 'credentials' );
@@ -503,22 +505,27 @@ final class Vault_Actions {
 	public static function handle_install_demo(): void {
 		self::verify_request( 'credential_vault_install_demo' );
 
+		$tab = self::demo_redirect_tab();
+
 		if ( ! Demo_Data::ui_enabled() ) {
-			self::redirect( 'tab=settings&vault_error=' . rawurlencode( __( 'Demo data tools are disabled.', 'credvault' ) ) );
+			self::redirect( 'tab=' . $tab . '&vault_error=' . rawurlencode( __( 'Demo data tools are disabled.', 'credvault' ) ) );
 		}
 
-		$sudo = self::require_sudo_for_writes();
-		if ( is_wp_error( $sudo ) ) {
-			self::redirect( 'tab=settings&vault_error=' . rawurlencode( $sudo->get_error_message() ) );
+		if ( ! Demo_Data::skip_sudo_for_install() ) {
+			$sudo = self::require_sudo_for_writes();
+			if ( is_wp_error( $sudo ) ) {
+				self::redirect( 'tab=' . $tab . '&vault_error=' . rawurlencode( $sudo->get_error_message() ) );
+			}
 		}
 
 		$result = Demo_Data::install();
 		if ( is_wp_error( $result ) ) {
-			self::redirect( 'tab=settings&vault_error=' . rawurlencode( $result->get_error_message() ) );
+			self::redirect( 'tab=' . $tab . '&vault_error=' . rawurlencode( $result->get_error_message() ) );
 		}
 
 		$query = sprintf(
-			'tab=settings&vault_notice=demo_installed&count=%d&skipped=%d',
+			'tab=%s&vault_notice=demo_installed&count=%d&skipped=%d',
+			rawurlencode( $tab ),
 			(int) ( $result['installed'] ?? 0 ),
 			(int) ( $result['skipped'] ?? 0 )
 		);
@@ -528,23 +535,34 @@ final class Vault_Actions {
 	public static function handle_remove_demo(): void {
 		self::verify_request( 'credential_vault_remove_demo' );
 
+		$tab = self::demo_redirect_tab();
+
 		if ( ! Demo_Data::ui_enabled() ) {
-			self::redirect( 'tab=settings&vault_error=' . rawurlencode( __( 'Demo data tools are disabled.', 'credvault' ) ) );
+			self::redirect( 'tab=' . $tab . '&vault_error=' . rawurlencode( __( 'Demo data tools are disabled.', 'credvault' ) ) );
 		}
 
-		$sudo = self::require_sudo_for_writes();
-		if ( is_wp_error( $sudo ) ) {
-			self::redirect( 'tab=settings&vault_error=' . rawurlencode( $sudo->get_error_message() ) );
+		if ( ! Demo_Data::skip_sudo_for_install() ) {
+			$sudo = self::require_sudo_for_writes();
+			if ( is_wp_error( $sudo ) ) {
+				self::redirect( 'tab=' . $tab . '&vault_error=' . rawurlencode( $sudo->get_error_message() ) );
+			}
 		}
 
 		$result = Demo_Data::remove();
 		if ( is_wp_error( $result ) ) {
-			self::redirect( 'tab=settings&vault_error=' . rawurlencode( $result->get_error_message() ) );
+			self::redirect( 'tab=' . $tab . '&vault_error=' . rawurlencode( $result->get_error_message() ) );
 		}
 
 		self::redirect(
-			'tab=settings&vault_notice=demo_removed&count=' . (int) ( $result['removed'] ?? 0 )
+			'tab=' . $tab . '&vault_notice=demo_removed&count=' . (int) ( $result['removed'] ?? 0 )
 		);
+	}
+
+	private static function demo_redirect_tab(): string {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$tab = isset( $_POST['redirect_tab'] ) ? sanitize_key( (string) wp_unslash( $_POST['redirect_tab'] ) ) : 'settings';
+
+		return in_array( $tab, array( 'dashboard', 'credentials', 'settings', 'audit' ), true ) ? $tab : 'settings';
 	}
 
 	/**
@@ -578,6 +596,12 @@ final class Vault_Actions {
 	private static function posted_owner(): string {
 		return isset( $_POST['credential_owner'] )
 			? sanitize_text_field( (string) wp_unslash( $_POST['credential_owner'] ) )
+			: '';
+	}
+
+	private static function posted_collection(): string {
+		return isset( $_POST['credential_collection'] )
+			? Secret_Collections::sanitize( (string) wp_unslash( $_POST['credential_collection'] ) )
 			: '';
 	}
 
@@ -731,6 +755,7 @@ final class Vault_Actions {
 
 		$bulk_env = isset( $_POST['bulk_environment'] ) ? sanitize_key( (string) wp_unslash( $_POST['bulk_environment'] ) ) : '';
 		$bulk_owner = isset( $_POST['bulk_owner'] ) ? sanitize_text_field( (string) wp_unslash( $_POST['bulk_owner'] ) ) : '';
+		$bulk_collection = isset( $_POST['bulk_collection'] ) ? Secret_Collections::sanitize( (string) wp_unslash( $_POST['bulk_collection'] ) ) : '';
 		$bulk_rotate = 0;
 		if ( isset( $_POST['bulk_rotate_by'] ) ) {
 			$raw = sanitize_text_field( (string) wp_unslash( $_POST['bulk_rotate_by'] ) );
@@ -762,7 +787,8 @@ final class Vault_Actions {
 			$runbook = (string) ( $row['runbook_url'] ?? '' );
 			$public = is_array( $row['public_fields'] ?? null ) ? $row['public_fields'] : array();
 
-			Credential_Meta::update_details( $name, $label, $notes, $env, $rotate, $owner, $runbook, $public );
+			$collection = '' !== $bulk_collection ? $bulk_collection : (string) ( $row['collection'] ?? '' );
+			Credential_Meta::update_details( $name, $label, $notes, $env, $rotate, $owner, $runbook, $public, $collection );
 			++$updated;
 		}
 

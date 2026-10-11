@@ -36,7 +36,8 @@ final class Autoloader {
 		if ( preg_match( '#^admin/(.+)$#', $relative, $matches ) ) {
 			array_unshift(
 				$candidates,
-				CREDENTIAL_VAULT_DIR . 'admin/class-admin-' . $matches[1] . '.php'
+				CREDENTIAL_VAULT_DIR . 'admin/class-admin-' . $matches[1] . '.php',
+				CREDENTIAL_VAULT_DIR . 'admin/class-' . $matches[1] . '.php'
 			);
 		}
 

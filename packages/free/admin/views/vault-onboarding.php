@@ -33,8 +33,15 @@ $base     = admin_url( 'admin.php?page=credential-vault' );
 			</li>
 		<?php endforeach; ?>
 	</ol>
-	<p>
-		<a class="button button-primary" href="<?php echo esc_url( add_query_arg( 'tab', 'import', $base ) ); ?>"><?php esc_html_e( 'Run import scanner', 'credvault' ); ?></a>
+	<p class="new-vault-onboarding__actions">
+		<?php if ( ! empty( $demo_can_install ) ) : ?>
+			<?php
+			$redirect_tab = 'dashboard';
+			$button_style = 'primary';
+			include CREDENTIAL_VAULT_DIR . 'admin/partials/vault-demo-install-form.php';
+			?>
+		<?php endif; ?>
+		<a class="button" href="<?php echo esc_url( add_query_arg( 'tab', 'import', $base ) ); ?>"><?php esc_html_e( 'Run import scanner', 'credvault' ); ?></a>
 		<a class="button" href="<?php echo esc_url( add_query_arg( 'tab', 'credentials', $base ) ); ?>"><?php esc_html_e( 'Add a credential', 'credvault' ); ?></a>
 	</p>
 	<?php if ( $can_manage ?? false ) : ?>

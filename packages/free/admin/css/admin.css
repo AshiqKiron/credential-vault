@@ -17,15 +17,79 @@
 
 .new-vault-cred-toolbar {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75em 1em;
-	align-items: flex-end;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.65em;
 	margin: 1em 0;
+	max-width: 36em;
+}
+
+.new-vault-cred-toolbar label {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	width: 100%;
+	margin: 0;
+	white-space: nowrap;
+}
+
+.new-vault-cred-toolbar__name {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 0 9.5em;
+	gap: 0.15em;
+}
+
+.new-vault-cred-toolbar label .cv-field-tip {
+	margin-right: 0;
+}
+
+.new-vault-cred-toolbar label input,
+.new-vault-cred-toolbar label select {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 22em;
 }
 
 .new-vault-bulk-meta {
-	max-width: 720px;
+	max-width: none;
 	margin-bottom: 1em;
+}
+
+.new-vault-bulk-meta h3.new-vault-heading-tip {
+	margin-top: 0;
+	font-size: 1.1em;
+	font-weight: 600;
+}
+
+.new-vault-bulk-meta__grid {
+	display: grid;
+	grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+	gap: 0.75em 1.25em;
+	margin: 0.75em 0 1em;
+}
+
+.new-vault-bulk-meta__field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35em;
+	min-width: 0;
+}
+
+.new-vault-bulk-meta__field--wide {
+	grid-column: 1 / -1;
+}
+
+.new-vault-bulk-meta__field .regular-text {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+@media screen and ( max-width: 782px ) {
+	.new-vault-bulk-meta__grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 .new-vault-sudo-panel h2 {
@@ -63,8 +127,114 @@
 }
 
 .new-vault-preview,
-.new-vault-fingerprint code {
+.new-vault-fingerprint {
 	font-size: 12px;
+	white-space: nowrap;
+}
+
+.new-vault-table-scroll {
+	overflow-x: auto;
+	max-width: 100%;
+}
+
+.new-vault-table td,
+.new-vault-table th {
+	vertical-align: top;
+}
+
+.new-vault-credential__label {
+	display: block;
+	font-size: 14px;
+}
+
+.new-vault-credential__slug {
+	display: inline-block;
+	margin-top: 0.2em;
+	padding: 0;
+	background: transparent;
+	color: #646970;
+	font-size: 12px;
+}
+
+.new-vault-facts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35em 1.25em;
+	margin: 0.55em 0 0;
+}
+
+.new-vault-facts > div {
+	display: flex;
+	gap: 0.4em;
+	align-items: baseline;
+	margin: 0;
+}
+
+.new-vault-facts dt {
+	margin: 0;
+	color: #646970;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.new-vault-facts dd {
+	margin: 0;
+}
+
+.new-vault-facts code {
+	padding: 0;
+	background: transparent;
+}
+
+.new-vault-credential .new-vault-meta-details {
+	max-width: 36rem;
+}
+
+.new-vault-status {
+	white-space: normal;
+}
+
+.new-vault-status .new-vault-badge {
+	display: inline-block;
+	margin: 0 0.35em 0.35em 0;
+}
+
+.new-vault-timing {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75em;
+}
+
+.new-vault-kicker {
+	display: block;
+	margin-bottom: 0.15em;
+	color: #646970;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.new-vault-when__rel,
+.new-vault-when__abs {
+	display: block;
+}
+
+.new-vault-when__rel {
+	font-weight: 600;
+}
+
+.new-vault-when__rel--overdue {
+	color: #8a2424;
+}
+
+.new-vault-when__abs {
+	margin-top: 0.1em;
+	color: #646970;
+	font-size: 12px;
+	font-weight: 400;
 }
 
 .new-vault-actions .new-vault-inline {
@@ -126,33 +296,223 @@
 	padding-left: 1.25em;
 }
 
-.new-vault-integrations {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-	gap: 1em;
-	margin: 1.25em 0 2em;
+.new-vault-token-board {
+	max-width: 1080px;
+	margin: 0.25em 0 1.75em;
 }
 
-.new-vault-integration {
-	max-width: none;
-	margin-top: 0;
+.new-vault-token-board [hidden] {
+	display: none !important;
 }
 
-.new-vault-integration__head {
+.new-vault-token-intro {
+	max-width: 62em;
+	margin: 0.75em 0 0;
+}
+
+.new-vault-token-toolbar {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 0.35em 0.5em;
-	margin-bottom: 0.5em;
+	gap: 0.75em;
+	margin: 1em 0 0.75em;
 }
 
-.new-vault-integration__title {
+.new-vault-token-search {
+	flex: 1 1 220px;
+	max-width: 360px;
 	margin: 0;
-	font-size: 1.1em;
 }
 
-.new-vault-integration__actions {
-	margin-bottom: 0;
+.new-vault-token-manage {
+	margin-left: auto;
+}
+
+.new-vault-token-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	margin: 0 0 1em;
+}
+
+.new-vault-token-stat {
+	appearance: none;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.1em;
+	min-width: 7.5rem;
+	margin: 0;
+	padding: 0.55em 0.85em;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+	color: #1d2327;
+	font: inherit;
+	line-height: 1.3;
+	text-align: left;
+	cursor: pointer;
+}
+
+.new-vault-token-stat strong {
+	font-size: 1.25em;
+	line-height: 1.2;
+}
+
+.new-vault-token-stat span {
+	color: #646970;
+	font-size: 12px;
+}
+
+.new-vault-token-stat:hover {
+	border-color: #8c8f94;
+}
+
+.new-vault-token-stat:focus {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	outline: 2px solid transparent;
+}
+
+.new-vault-token-stat.is-active {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	background: #f0f6fc;
+}
+
+.new-vault-token-stat--warn strong {
+	color: #8a6d1b;
+}
+
+.new-vault-token-stat--warn.is-active {
+	border-color: #dba617;
+	box-shadow: 0 0 0 1px #dba617;
+	background: #fcf9e8;
+}
+
+.new-vault-token-alert {
+	margin: 0 0 1em;
+}
+
+.new-vault-token-group {
+	margin: 0 0 1.15em;
+}
+
+.new-vault-token-group__title {
+	margin: 0 0 0.4em;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.new-vault-token-group__count {
+	margin-left: 0.35em;
+	color: #646970;
+	font-weight: 400;
+}
+
+.new-vault-token-list {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+}
+
+.new-vault-token-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1.7fr) minmax(150px, 0.7fr) auto;
+	gap: 0.75em 1.25em;
+	align-items: center;
+	padding: 0.85em 1em;
+	border-top: 1px solid #f0f0f1;
+}
+
+.new-vault-token-row:first-child {
+	border-top: 0;
+}
+
+.new-vault-token-row--attention {
+	background: #fffdf6;
+	box-shadow: inset 3px 0 0 #dba617;
+}
+
+.new-vault-token-row--ready {
+	box-shadow: inset 3px 0 0 #00a32a;
+}
+
+.new-vault-token-row__identity {
+	display: flex;
+	gap: 0.75em;
+	align-items: flex-start;
+	min-width: 0;
+}
+
+.new-vault-token-row__identity h3 {
+	margin: 0;
+	font-size: 14px;
+	line-height: 1.3;
+}
+
+.new-vault-token-row__identity .description {
+	margin: 0.15em 0 0;
+}
+
+.new-vault-token-row__preview {
+	display: inline-block;
+	margin-top: 0.4em;
+	word-break: break-all;
+}
+
+.new-vault-token-mark {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 8px;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+.new-vault-token-mark--0 { background: #e7f5fe; color: #135e96; }
+.new-vault-token-mark--1 { background: #f0e9f8; color: #5b2c83; }
+.new-vault-token-mark--2 { background: #e7f6ee; color: #135e2c; }
+.new-vault-token-mark--3 { background: #fdf2e9; color: #8a4b08; }
+.new-vault-token-mark--4 { background: #fdecea; color: #8a2424; }
+.new-vault-token-mark--5 { background: #eef2ff; color: #1e3a8a; }
+
+.new-vault-token-row__status {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35em;
+	align-items: center;
+}
+
+.new-vault-token-row__status .new-vault-badge {
+	margin-left: 0;
+}
+
+.new-vault-token-row__actions {
+	margin: 0;
+}
+
+.new-vault-token-row__actions .button {
+	white-space: nowrap;
+}
+
+.new-vault-token-empty {
+	margin: 0.5em 0 1em;
+}
+
+@media screen and ( max-width: 782px ) {
+	.new-vault-token-manage {
+		margin-left: 0;
+	}
+
+	.new-vault-token-row {
+		grid-template-columns: 1fr;
+		gap: 0.65em;
+	}
 }
 
 .new-vault-badge--env-production {
@@ -204,7 +564,7 @@
 }
 
 .new-vault-heading-tip .cv-field-tip {
-	margin-left: 0;
+	margin-right: 0.35em;
 }
 
 .new-vault-features summary,
@@ -225,12 +585,18 @@
 	display: none;
 }
 
+.cv-field-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25em;
+}
+
 .cv-field-tip {
 	position: relative;
 	display: inline-flex;
 	align-items: center;
 	vertical-align: middle;
-	margin-left: 0.35em;
+	margin-right: 0.35em;
 	cursor: help;
 	outline: none;
 }
@@ -295,5 +661,9 @@
 }
 
 label .cv-field-tip {
-	margin-left: 0.25em;
+	margin-right: 0.25em;
+}
+
+.cv-field-label .cv-field-tip {
+	margin-right: 0;
 }

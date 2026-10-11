@@ -433,6 +433,9 @@ final class CLI {
 	 * [--from-env=<NAME>]
 	 * : New secret value from environment variable.
 	 *
+	 * [--test-only]
+	 * : Run the rotation smoke test against the current secret without saving a new value.
+	 *
 	 * [--retire-previous]
 	 * : Retire previous slot after successful save/test.
 	 *
@@ -450,6 +453,18 @@ final class CLI {
 			\WP_CLI::error( 'Provide a vault slug.' );
 		}
 
+		$network = isset( $assoc_args['network'] );
+		$name    = Secrets_Bridge::secret_name( $slug );
+
+		if ( isset( $assoc_args['test-only'] ) ) {
+			$test = Rotation_Workflow::run_post_save_test( $name, $network );
+			if ( is_wp_error( $test ) ) {
+				\WP_CLI::error( $test->get_error_message() );
+			}
+			\WP_CLI::success( 'Rotation smoke test passed (no value was changed).' );
+			return;
+		}
+
 		$value = '';
 		if ( isset( $assoc_args['from-env'] ) ) {
 			$env_val = getenv( (string) $assoc_args['from-env'] );
@@ -458,18 +473,16 @@ final class CLI {
 			$value = stream_get_contents( STDIN );
 			$value = is_string( $value ) ? trim( $value ) : '';
 		} else {
-			\WP_CLI::error( 'Provide --from-stdin or --from-env for the new value.' );
+			\WP_CLI::error( 'Provide --from-stdin or --from-env for the new value, or use --test-only.' );
 		}
 
-		$network = isset( $assoc_args['network'] );
-		$result  = credential_vault_set( $slug, $value, $network, array( 'source' => 'cli_rotate' ) );
+		$result  = credential_vault_set( $slug, $value, $network, array( 'source' => Query_Source::CLI . '.rotate' ) );
 		Secrets_Bridge::memzero( $value );
 
 		if ( is_wp_error( $result ) ) {
 			\WP_CLI::error( $result->get_error_message() );
 		}
 
-		$name = Secrets_Bridge::secret_name( $slug );
 		$test = Rotation_Workflow::run_post_save_test( $name, $network );
 		if ( is_wp_error( $test ) ) {
 			\WP_CLI::warning( $test->get_error_message() );
@@ -694,6 +707,107 @@ final class CLI {
 		}
 
 		\WP_CLI\Utils\format_items( 'table', $out, array( 'time', 'action', 'secret', 'user' ) );
+	}
+
+	/**
+	 * Per-credential health scores (metadata signals).
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : table or json
+	 */
+	public function health_scores( array $args, array $assoc_args ): void {
+		unset( $args );
+		$this->require_view();
+
+		$rows = Secret_Health_Scores::all_site();
+		if ( isset( $assoc_args['format'] ) && 'json' === $assoc_args['format'] ) {
+			\WP_CLI::line( wp_json_encode( $rows ) );
+			return;
+		}
+
+		\WP_CLI\Utils\format_items( 'table', $rows, array( 'slug', 'score', 'grade' ) );
+	}
+
+	/**
+	 * Scan block editor content for likely API key patterns.
+	 */
+	public function blocks_scan( array $args, array $assoc_args ): void {
+		unset( $args, $assoc_args );
+		$this->require_view();
+
+		$hits = Block_Scanner::scan( 200 );
+		if ( empty( $hits ) ) {
+			\WP_CLI::success( 'No block editor pattern hits.' );
+			return;
+		}
+
+		\WP_CLI\Utils\format_items( 'table', $hits, array( 'post_id', 'title', 'pattern', 'excerpt' ) );
+	}
+
+	/**
+	 * Compare metadata between two JSON exports or manifest files.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <left>
+	 * : Path to left JSON/manifest file.
+	 *
+	 * <right>
+	 * : Path to right JSON/manifest file.
+	 *
+	 * [--format=<format>]
+	 * : json or table summary
+	 */
+	public function metadata_diff( array $args, array $assoc_args ): void {
+		$this->require_view();
+
+		$left_path  = isset( $args[0] ) ? (string) $args[0] : '';
+		$right_path = isset( $args[1] ) ? (string) $args[1] : '';
+		if ( '' === $left_path || '' === $right_path ) {
+			\WP_CLI::error( 'Provide left and right file paths.' );
+		}
+
+		$left  = Metadata_Diff::load_file( $left_path );
+		$right = Metadata_Diff::load_file( $right_path );
+		if ( is_wp_error( $left ) ) {
+			\WP_CLI::error( $left->get_error_message() );
+		}
+		if ( is_wp_error( $right ) ) {
+			\WP_CLI::error( $right->get_error_message() );
+		}
+
+		$diff = Metadata_Diff::compare( $left, $right );
+		if ( isset( $assoc_args['format'] ) && 'json' === $assoc_args['format'] ) {
+			\WP_CLI::line( wp_json_encode( $diff ) );
+			return;
+		}
+
+		\WP_CLI::line( 'only_left: ' . count( $diff['only_left'] ) );
+		\WP_CLI::line( 'only_right: ' . count( $diff['only_right'] ) );
+		\WP_CLI::line( 'changed: ' . count( $diff['changed'] ) );
+	}
+
+	/**
+	 * Write rotation reminder iCal file.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--file=<path>]
+	 * : Output path (default: credential-vault-rotation.ics in cwd).
+	 */
+	public function rotation_calendar( array $args, array $assoc_args ): void {
+		unset( $args );
+		$this->require_view();
+
+		$file = isset( $assoc_args['file'] ) ? (string) $assoc_args['file'] : 'credential-vault-rotation.ics';
+		$body = Rotation_Calendar::build_ical();
+		if ( false === file_put_contents( $file, $body ) ) {
+			\WP_CLI::error( 'Could not write calendar file.' );
+		}
+
+		\WP_CLI::success( 'Wrote ' . $file );
 	}
 
 	private function require_manage(): void {

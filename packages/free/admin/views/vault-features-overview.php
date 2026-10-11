@@ -16,9 +16,9 @@ use CredentialVault\Admin\Field_Help;
 ?>
 <details class="new-vault-features card">
 	<summary class="new-vault-heading-tip">
-		<?php esc_html_e( 'How Credential Vault protects your site', 'credvault' ); ?>
 		<?php
-		echo Field_Help::icon(
+		echo Field_Help::heading(
+			__( 'How Credential Vault protects your site', 'credvault' ),
 			__( 'Encrypted Secrets API storage, sudo re-auth, centralized dashboard, audit trail, and two-slot rotation.', 'credvault' )
 		);
 		?>

@@ -19,9 +19,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CredentialVault\Admin\Field_Help;
+use CredentialVault\Audit_Activity;
 use CredentialVault\Credential_Meta;
 use CredentialVault\Environment_Guard;
 use CredentialVault\Integration_Snippets;
+use CredentialVault\Secret_Collections;
 use CredentialVault\Secrets_Bridge;
 use CredentialVault\Vault_Settings;
 
@@ -33,26 +35,33 @@ $can_edit    = $can_manage && ( $sudo_active || ! Vault_Settings::sudo_required_
 $field_templates = Credential_Meta::service_field_templates();
 
 ?>
+<div class="new-vault-table-scroll">
 <table class="widefat striped new-vault-table">
 	<thead>
 		<tr>
 			<?php if ( $can_manage ) : ?>
 				<th class="check-column"><input type="checkbox" id="cv-bulk-all" aria-label="<?php esc_attr_e( 'Select all', 'credvault' ); ?>" /></th>
 			<?php endif; ?>
-			<th><?php esc_html_e( 'Label', 'credvault' ); ?></th>
-			<th><?php esc_html_e( 'Name', 'credvault' ); ?></th>
-			<th><?php esc_html_e( 'Preview', 'credvault' ); ?></th>
-			<th><?php esc_html_e( 'Fingerprint', 'credvault' ); ?></th>
-			<th><?php esc_html_e( 'Environment', 'credvault' ); ?></th>
-			<th><?php esc_html_e( 'Rotate by', 'credvault' ); ?></th>
-			<th><?php esc_html_e( 'Last activity', 'credvault' ); ?></th>
-			<th><?php esc_html_e( 'Rotation', 'credvault' ); ?></th>
+			<th><?php esc_html_e( 'Credential', 'credvault' ); ?></th>
+			<th><?php esc_html_e( 'Status', 'credvault' ); ?></th>
+			<th><?php esc_html_e( 'Schedule', 'credvault' ); ?></th>
 			<th><?php esc_html_e( 'Actions', 'credvault' ); ?></th>
 		</tr>
 	</thead>
 	<tbody>
 		<?php if ( empty( $credentials ) ) : ?>
-			<tr><td colspan="<?php echo $can_manage ? 10 : 9; ?>"><?php esc_html_e( 'No credentials in this scope yet.', 'credvault' ); ?></td></tr>
+			<tr>
+				<td colspan="<?php echo $can_manage ? 5 : 4; ?>">
+					<?php esc_html_e( 'No credentials in this scope yet.', 'credvault' ); ?>
+					<?php if ( ! empty( $demo_can_install ) && 'site' === $scope ) : ?>
+						<?php
+						$redirect_tab = 'credentials';
+						$button_style = 'secondary';
+						include CREDENTIAL_VAULT_DIR . 'admin/partials/vault-demo-install-form.php';
+						?>
+					<?php endif; ?>
+				</td>
+			</tr>
 		<?php else : ?>
 			<?php foreach ( $credentials as $row ) : ?>
 				<?php
@@ -67,6 +76,7 @@ $field_templates = Credential_Meta::service_field_templates();
 				$env       = $meta['environment'] ?? '';
 				$service   = $meta['service'] ?? 'custom';
 				$rotate_by = (int) ( $meta['rotate_by'] ?? 0 );
+				$collection = (string) ( $meta['collection'] ?? '' );
 				$env_labels = Credential_Meta::environment_choices();
 				$has_prev  = ! empty( $row['has_previous'] );
 				$needs_rot = ! empty( $row['needs_rotation'] );
@@ -97,17 +107,48 @@ $field_templates = Credential_Meta::service_field_templates();
 							<?php endif; ?>
 						</th>
 					<?php endif; ?>
-					<td>
-						<strong><?php echo esc_html( $label ); ?></strong>
-						<?php if ( $needs_rot ) : ?>
-							<span class="new-vault-badge new-vault-badge--warn"><?php esc_html_e( 'Rotate recommended', 'credvault' ); ?></span>
-						<?php endif; ?>
-						<?php if ( $overdue ) : ?>
-							<span class="new-vault-badge new-vault-badge--warn"><?php esc_html_e( 'Overdue', 'credvault' ); ?></span>
-						<?php endif; ?>
-						<?php if ( null !== $env_warn ) : ?>
-							<span class="new-vault-badge new-vault-badge--warn" title="<?php echo esc_attr( $env_warn ); ?>"><?php esc_html_e( 'Env mismatch', 'credvault' ); ?></span>
-						<?php endif; ?>
+					<td class="new-vault-credential">
+						<strong class="new-vault-credential__label"><?php echo esc_html( $label ); ?></strong>
+						<?php
+						$show_name = $sudo_active || ! $in_vault;
+						if ( $show_name && $in_vault ) {
+							$primary    = basename( $name );
+							$name_title = $name;
+						} elseif ( $show_name ) {
+							$primary    = $name;
+							$name_title = $name;
+						} else {
+							$primary    = Secrets_Bridge::VAULT_NAMESPACE . '/••••••';
+							$name_title = '';
+						}
+						$fingerprint  = (string) $row['fingerprint'];
+						$short_fp     = strlen( $fingerprint ) > 12 ? substr( $fingerprint, 0, 12 ) . '…' : $fingerprint;
+						$preview_text = ( $sudo_active && $in_vault ) ? $preview : '••••••••';
+						?>
+						<code class="new-vault-credential__slug"<?php echo '' !== $name_title ? ' title="' . esc_attr( $name_title ) . '"' : ''; ?>>
+							<?php
+							$name_parts = explode( '/', $primary );
+							$last_part  = count( $name_parts ) - 1;
+							foreach ( $name_parts as $index => $part ) {
+								echo esc_html( $part );
+								if ( $index < $last_part ) {
+									echo '/<wbr>';
+								}
+							}
+							?>
+						</code>
+						<dl class="new-vault-facts">
+							<div>
+								<dt><?php esc_html_e( 'Preview', 'credvault' ); ?></dt>
+								<dd><code class="new-vault-preview"><?php echo esc_html( $preview_text ); ?></code></dd>
+							</div>
+							<?php if ( '' !== $fingerprint ) : ?>
+								<div>
+									<dt><?php esc_html_e( 'Fingerprint', 'credvault' ); ?></dt>
+									<dd><code class="new-vault-fingerprint" title="<?php echo esc_attr( $fingerprint ); ?>"><?php echo esc_html( $short_fp ); ?></code></dd>
+								</div>
+							<?php endif; ?>
+						</dl>
 						<?php if ( $has_meta ) : ?>
 							<details class="new-vault-meta-details">
 								<summary><?php esc_html_e( 'Notes & metadata', 'credvault' ); ?></summary>
@@ -132,9 +173,9 @@ $field_templates = Credential_Meta::service_field_templates();
 						<?php if ( '' !== $code_sample ) : ?>
 							<details class="new-vault-meta-details">
 								<summary class="new-vault-heading-tip">
-									<?php esc_html_e( 'Code samples', 'credvault' ); ?>
 									<?php
-									echo Field_Help::icon(
+									echo Field_Help::heading(
+										__( 'Code samples', 'credvault' ),
 										__( 'Copy into theme or plugin code. Secret values are never shown here.', 'credvault' )
 									);
 									?>
@@ -143,58 +184,92 @@ $field_templates = Credential_Meta::service_field_templates();
 							</details>
 						<?php endif; ?>
 					</td>
-					<td>
-						<code>
-							<?php
-							if ( $sudo_active || ! $in_vault ) {
-								echo esc_html( $name );
-							} else {
-								echo esc_html( Secrets_Bridge::VAULT_NAMESPACE . '/••••••' );
-							}
-							?>
-						</code>
-					</td>
-					<td><code class="new-vault-preview"><?php echo esc_html( ( $sudo_active && $in_vault ) ? $preview : '••••••••' ); ?></code></td>
-					<td class="new-vault-fingerprint"><code><?php echo esc_html( substr( (string) $row['fingerprint'], 0, 16 ) . '…' ); ?></code></td>
-					<td>
+					<td class="new-vault-status">
 						<?php
+						$has_status = false;
 						if ( '' !== $env && isset( $env_labels[ $env ] ) ) {
-							$badge = Credential_Meta::environment_badge_class( $env );
+							$has_status = true;
+							$badge      = Credential_Meta::environment_badge_class( $env );
 							printf(
 								'<span class="new-vault-badge %1$s">%2$s</span>',
 								esc_attr( $badge ),
 								esc_html( $env_labels[ $env ] )
 							);
-						} else {
+						}
+						if ( $overdue ) {
+							$has_status = true;
+							echo '<span class="new-vault-badge new-vault-badge--warn">' . esc_html__( 'Overdue', 'credvault' ) . '</span>';
+						} elseif ( $needs_rot ) {
+							$has_status = true;
+							echo '<span class="new-vault-badge new-vault-badge--warn">' . esc_html__( 'Rotate recommended', 'credvault' ) . '</span>';
+						}
+						if ( null !== $env_warn ) {
+							$has_status = true;
+							printf(
+								'<span class="new-vault-badge new-vault-badge--warn" title="%1$s">%2$s</span>',
+								esc_attr( $env_warn ),
+								esc_html__( 'Env mismatch', 'credvault' )
+							);
+						}
+						if ( $has_prev ) {
+							$has_status = true;
+							printf(
+								'<span class="new-vault-badge" title="%1$s">%2$s</span>',
+								esc_attr__( 'The previous secret is still stored until you retire it.', 'credvault' ),
+								esc_html__( 'Old key kept', 'credvault' )
+							);
+						}
+						if ( ! $has_status ) {
 							echo '—';
 						}
 						?>
 					</td>
 					<td>
-						<?php
-						if ( $rotate_by > 0 ) {
-							echo esc_html( wp_date( get_option( 'date_format' ), $rotate_by ) );
-						} else {
-							echo '—';
-						}
-						?>
-					</td>
-					<td>
-						<?php
-						if ( is_array( $activity ) && ! empty( $activity['time'] ) ) {
-							echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $activity['time'] ) );
-							echo '<br /><code class="description">' . esc_html( (string) ( $activity['action'] ?? '' ) ) . '</code>';
-						} else {
-							echo '—';
-						}
-						?>
-					</td>
-					<td>
-						<?php if ( $has_prev ) : ?>
-							<span class="new-vault-badge"><?php esc_html_e( 'Previous slot in use', 'credvault' ); ?></span>
-						<?php else : ?>
-							—
-						<?php endif; ?>
+						<div class="new-vault-timing">
+							<div>
+								<span class="new-vault-kicker"><?php esc_html_e( 'Rotate by', 'credvault' ); ?></span>
+								<?php
+								if ( $rotate_by > 0 ) {
+									$abs  = wp_date( 'M j, Y', $rotate_by );
+									$diff = human_time_diff( $rotate_by, time() );
+									if ( $overdue ) {
+										/* translators: %s: human time difference, e.g. "16 days". */
+										$rel = sprintf( __( '%s overdue', 'credvault' ), $diff );
+									} else {
+										/* translators: %s: human time difference, e.g. "20 days". */
+										$rel = sprintf( __( 'Due in %s', 'credvault' ), $diff );
+									}
+									$full = wp_date( get_option( 'date_format' ), $rotate_by );
+									?>
+									<span class="new-vault-when__rel<?php echo $overdue ? ' new-vault-when__rel--overdue' : ''; ?>" title="<?php echo esc_attr( $full ); ?>"><?php echo esc_html( $rel ); ?></span>
+									<span class="new-vault-when__abs"><?php echo esc_html( $abs ); ?></span>
+									<?php
+								} else {
+									echo '<span class="new-vault-when__abs">' . esc_html__( 'Not scheduled', 'credvault' ) . '</span>';
+								}
+								?>
+							</div>
+							<div>
+								<span class="new-vault-kicker"><?php esc_html_e( 'Last activity', 'credvault' ); ?></span>
+								<?php
+								if ( is_array( $activity ) && ! empty( $activity['time'] ) ) {
+									$activity_time = (int) $activity['time'];
+									$full          = wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $activity_time );
+									/* translators: %s: human time difference, e.g. "6 hours". */
+									$rel    = sprintf( __( '%s ago', 'credvault' ), human_time_diff( $activity_time, time() ) );
+									$action = Audit_Activity::action_label( (string) ( $activity['action'] ?? '' ) );
+									?>
+									<span class="new-vault-when__rel" title="<?php echo esc_attr( $full ); ?>"><?php echo esc_html( $rel ); ?></span>
+									<?php if ( '' !== $action ) : ?>
+										<span class="new-vault-when__abs"><?php echo esc_html( $action ); ?></span>
+									<?php endif; ?>
+									<?php
+								} else {
+									echo '<span class="new-vault-when__abs">' . esc_html__( 'No activity yet', 'credvault' ) . '</span>';
+								}
+								?>
+							</div>
+						</div>
 					</td>
 					<td class="new-vault-actions">
 						<?php if ( $can_edit && $api_available && $in_vault ) : ?>
@@ -208,6 +283,15 @@ $field_templates = Credential_Meta::service_field_templates();
 									<p>
 										<label><?php echo Field_Help::inline( __( 'Label', 'credvault' ), Field_Help::credential_tip( 'label' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 											<input type="text" name="credential_label" class="regular-text" value="<?php echo esc_attr( $label ); ?>" />
+										</label>
+									</p>
+									<p>
+										<label><?php echo Field_Help::inline( __( 'Collection', 'credvault' ), Field_Help::credential_tip( 'collection' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+											<select name="credential_collection">
+												<?php foreach ( Secret_Collections::choices() as $col_key => $col_label ) : ?>
+													<option value="<?php echo esc_attr( $col_key ); ?>" <?php selected( $collection, $col_key ); ?>><?php echo esc_html( $col_label ); ?></option>
+												<?php endforeach; ?>
+											</select>
 										</label>
 									</p>
 									<p>
@@ -303,7 +387,7 @@ $field_templates = Credential_Meta::service_field_templates();
 						<?php elseif ( ! $in_vault ) : ?>
 							<span class="description"><?php esc_html_e( 'Owned by another plugin', 'credvault' ); ?></span>
 						<?php else : ?>
-							<span class="description"><?php esc_html_e( 'Unlock to manage', 'credvault' ); ?></span>
+							<span class="description"><?php esc_html_e( 'Unlock the vault to manage', 'credvault' ); ?></span>
 						<?php endif; ?>
 					</td>
 				</tr>
@@ -311,3 +395,4 @@ $field_templates = Credential_Meta::service_field_templates();
 		<?php endif; ?>
 	</tbody>
 </table>
+</div>

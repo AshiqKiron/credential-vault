@@ -20,6 +20,9 @@ use CredentialVaultPro\License_Seats;
 use CredentialVaultPro\Plugin_Adapters;
 use CredentialVaultPro\Sso_Gate;
 use CredentialVaultPro\Template_Credentials;
+use CredentialVaultPro\Compromise_Playbook;
+use CredentialVaultPro\Jit_Access;
+use CredentialVaultPro\Webhook_Delivery_Log;
 use CredentialVaultPro\Webhooks;
 
 $hooks = Webhooks::all();
@@ -59,9 +62,9 @@ foreach ( $env_map as $env => $slug ) {
 
 <div class="card new-vault-add">
 	<h2 class="new-vault-heading-tip">
-		<?php esc_html_e( 'Webhook notifications', 'credential-vault-pro' ); ?>
 		<?php
-		echo Field_Help::icon(
+		echo Field_Help::heading(
+			__( 'Webhook notifications', 'credential-vault-pro' ),
 			__( 'Events: rotate, retire, failed rotation tests, undecryptable secrets, overdue rotation, and anomalies. Formats: generic HTTPS, Slack incoming webhook, PagerDuty Events v2 (use routing key as signing secret).', 'credential-vault-pro' )
 		);
 		?>
@@ -99,13 +102,29 @@ foreach ( $env_map as $env => $slug ) {
 		</table>
 		<?php submit_button( __( 'Save webhooks', 'credential-vault-pro' ) ); ?>
 	</form>
+	<?php $deliveries = Webhook_Delivery_Log::recent( 15 ); ?>
+	<?php if ( ! empty( $deliveries ) ) : ?>
+		<h3><?php esc_html_e( 'Recent webhook deliveries', 'credential-vault-pro' ); ?></h3>
+		<table class="widefat striped">
+			<thead><tr><th><?php esc_html_e( 'Time', 'credential-vault-pro' ); ?></th><th><?php esc_html_e( 'Event', 'credential-vault-pro' ); ?></th><th><?php esc_html_e( 'Status', 'credential-vault-pro' ); ?></th></tr></thead>
+			<tbody>
+				<?php foreach ( $deliveries as $row ) : ?>
+					<tr>
+						<td><?php echo esc_html( gmdate( 'c', (int) ( $row['time'] ?? 0 ) ) ); ?></td>
+						<td><code><?php echo esc_html( (string) ( $row['event_id'] ?? '' ) ); ?></code> <?php echo esc_html( (string) ( $row['event'] ?? '' ) ); ?></td>
+						<td><?php echo ! empty( $row['success'] ) ? esc_html__( 'OK', 'credential-vault-pro' ) : esc_html__( 'Failed', 'credential-vault-pro' ); ?> (<?php echo (int) ( $row['status_code'] ?? 0 ); ?>)</td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	<?php endif; ?>
 </div>
 
 <div class="card">
 	<h2 class="new-vault-heading-tip">
-		<?php esc_html_e( 'Scoped API tokens', 'credential-vault-pro' ); ?>
 		<?php
-		echo Field_Help::icon(
+		echo Field_Help::heading(
+			__( 'Scoped API tokens', 'credential-vault-pro' ),
 			__( 'Use Authorization: Bearer <token> on REST routes. Works alongside Application Passwords.', 'credential-vault-pro' )
 		);
 		?>
@@ -121,6 +140,11 @@ foreach ( $env_map as $env => $slug ) {
 		<p>
 			<label><?php echo Field_Help::inline( __( 'Slugs (comma, empty = all)', 'credential-vault-pro' ), Field_Help::pro_tip( 'token_slugs' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<input type="text" name="token_slugs" class="large-text" placeholder="stripe-api-key,smtp-password" />
+			</label>
+		</p>
+		<p>
+			<label><?php esc_html_e( 'IP allowlist (comma, optional CIDR)', 'credential-vault-pro' ); ?>
+				<input type="text" name="token_ip_allowlist" class="large-text" placeholder="203.0.113.10, 198.51.100.0/24" />
 			</label>
 		</p>
 		<p>
@@ -270,9 +294,9 @@ foreach ( $env_map as $env => $slug ) {
 
 <div class="card">
 	<h2 class="new-vault-heading-tip">
-		<?php esc_html_e( 'Env sync (one-way import)', 'credential-vault-pro' ); ?>
 		<?php
-		echo Field_Help::icon(
+		echo Field_Help::heading(
+			__( 'Env sync (one-way import)', 'credential-vault-pro' ),
 			__( 'WP-CLI: wp credvault pro env-sync --file=/path/.env — example placeholders: wp credvault pro env-example', 'credential-vault-pro' )
 		);
 		?>
@@ -308,6 +332,74 @@ foreach ( $env_map as $env => $slug ) {
 		<?php endforeach; ?>
 		<?php submit_button( __( 'Save templates', 'credential-vault-pro' ), 'secondary' ); ?>
 	</form>
+</div>
+
+<div class="card">
+	<h2><?php esc_html_e( 'Just-in-time reveal access', 'credential-vault-pro' ); ?></h2>
+	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<?php wp_nonce_field( 'credential_vault_pro_save_jit_settings' ); ?>
+		<input type="hidden" name="action" value="credential_vault_pro_save_jit_settings" />
+		<label><input type="checkbox" name="jit_enforcement" value="1" <?php checked( Jit_Access::enforcement_enabled() ); ?> /> <?php esc_html_e( 'Require approved JIT grant before non-admin reveal', 'credential-vault-pro' ); ?></label>
+		<?php submit_button( __( 'Save JIT settings', 'credential-vault-pro' ), 'secondary' ); ?>
+	</form>
+	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<?php wp_nonce_field( 'credential_vault_pro_request_jit' ); ?>
+		<input type="hidden" name="action" value="credential_vault_pro_request_jit" />
+		<p><label><?php esc_html_e( 'Slug', 'credential-vault-pro' ); ?> <input type="text" name="jit_slug" class="regular-text" required /></label></p>
+		<p><label><?php esc_html_e( 'Minutes', 'credential-vault-pro' ); ?> <input type="number" min="5" max="120" name="jit_minutes" value="15" /></label></p>
+		<p><label><?php esc_html_e( 'Reason', 'credential-vault-pro' ); ?> <textarea name="jit_reason" class="large-text" rows="2" required></textarea></label></p>
+		<?php submit_button( __( 'Request access', 'credential-vault-pro' ), 'secondary' ); ?>
+	</form>
+	<?php $jit_grants = Jit_Access::all(); ?>
+	<?php if ( ! empty( $jit_grants ) ) : ?>
+		<table class="widefat striped">
+			<thead><tr><th><?php esc_html_e( 'Slug', 'credential-vault-pro' ); ?></th><th><?php esc_html_e( 'User', 'credential-vault-pro' ); ?></th><th><?php esc_html_e( 'Expires', 'credential-vault-pro' ); ?></th><th></th></tr></thead>
+			<tbody>
+				<?php foreach ( $jit_grants as $grant ) : ?>
+					<tr>
+						<td><?php echo esc_html( (string) ( $grant['slug'] ?? '' ) ); ?></td>
+						<td><?php echo (int) ( $grant['user_id'] ?? 0 ); ?></td>
+						<td><?php echo esc_html( gmdate( 'c', (int) ( $grant['expires'] ?? 0 ) ) ); ?> <?php echo ! empty( $grant['approved'] ) ? '✓' : '⏳'; ?></td>
+						<td>
+							<?php if ( empty( $grant['approved'] ) && current_user_can( 'manage_options' ) ) : ?>
+								<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline">
+									<?php wp_nonce_field( 'credential_vault_pro_approve_jit' ); ?>
+									<input type="hidden" name="action" value="credential_vault_pro_approve_jit" />
+									<input type="hidden" name="grant_id" value="<?php echo esc_attr( (string) ( $grant['id'] ?? '' ) ); ?>" />
+									<?php submit_button( __( 'Approve', 'credential-vault-pro' ), 'secondary small', '', false ); ?>
+								</form>
+							<?php endif; ?>
+							<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline">
+								<?php wp_nonce_field( 'credential_vault_pro_revoke_jit' ); ?>
+								<input type="hidden" name="action" value="credential_vault_pro_revoke_jit" />
+								<input type="hidden" name="grant_id" value="<?php echo esc_attr( (string) ( $grant['id'] ?? '' ) ); ?>" />
+								<?php submit_button( __( 'Revoke', 'credential-vault-pro' ), 'delete small', '', false ); ?>
+							</form>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	<?php endif; ?>
+</div>
+
+<div class="card">
+	<h2><?php esc_html_e( 'Compromise response playbook', 'credential-vault-pro' ); ?></h2>
+	<p class="description"><?php esc_html_e( 'Retires the previous rotation slot, logs audit metadata, and fires a security webhook. Does not delete the active secret.', 'credential-vault-pro' ); ?></p>
+	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<?php wp_nonce_field( 'credential_vault_pro_run_compromise_playbook' ); ?>
+		<input type="hidden" name="action" value="credential_vault_pro_run_compromise_playbook" />
+		<p><label><?php esc_html_e( 'Vault slug', 'credential-vault-pro' ); ?> <input type="text" name="playbook_slug" class="regular-text" required /></label></p>
+		<p><label><input type="checkbox" name="playbook_network" value="1" /> <?php esc_html_e( 'Network scope', 'credential-vault-pro' ); ?></label></p>
+		<?php submit_button( __( 'Run playbook', 'credential-vault-pro' ), 'delete' ); ?>
+	</form>
+	<p class="description"><?php esc_html_e( 'Related slugs (from usage map prefix):', 'credential-vault-pro' ); ?> <?php echo esc_html( implode( ', ', Compromise_Playbook::related_slugs( 'stripe-api-key' ) ) ); ?></p>
+</div>
+
+<div class="card">
+	<h2><?php esc_html_e( 'Remote health (REST)', 'credential-vault-pro' ); ?></h2>
+	<p><code><?php echo esc_html( rest_url( 'credential-vault/v1/remote-health' ) ); ?></code></p>
+	<p class="description"><?php esc_html_e( 'Metadata-only summary for ManageWP, MainWP, or custom probes. Requires vault view capability.', 'credential-vault-pro' ); ?></p>
 </div>
 
 <div class="card">

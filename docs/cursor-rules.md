@@ -88,8 +88,8 @@ Guidelines:
 
 High-level feature map and extension hooks live in package **`AGENTS.md`** files (not in `.mdc` rules):
 
-- [`packages/free/AGENTS.md`](../packages/free/AGENTS.md) — boot order, `Secrets_Bridge`, audit/sudo, admin tabs, CLI/manifest
-- [`packages/pro/AGENTS.md`](../packages/pro/AGENTS.md) — full `register_pro_features()` map, REST/tokens, webhooks, activator
+- [`packages/free/AGENTS.md`](../packages/free/AGENTS.md) — boot order, **`Extended_Features`**, demo/test mode, audit activity, CLI/manifest
+- [`packages/pro/AGENTS.md`](../packages/pro/AGENTS.md) — full `register_pro_features()` map (incl. JIT, idempotency, webhook log), activator
 
 User-facing feature list: [`README.md`](../README.md). IDE stubs: [`stubs/credential-vault-stubs.php`](../stubs/credential-vault-stubs.php).
 
@@ -99,3 +99,5 @@ User-facing feature list: [`README.md`](../README.md). IDE stubs: [`stubs/creden
 - [ ] Frontmatter: `description`, and `globs` or `alwaysApply` as intended
 - [ ] Body references `packages/free` and `packages/pro`, not only root legacy folders
 - [ ] Row added to **Current `.mdc` rules** table in this doc (if you added an `.mdc` file)
+- [ ] New pro class: `::register()` in `Plugin::register_pro_features()` and row in **`packages/pro/AGENTS.md`**
+- [ ] New hook-based free class: prefer `Extended_Features::register()`; document in **`packages/free/AGENTS.md`**
