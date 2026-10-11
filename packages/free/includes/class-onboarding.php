@@ -1,0 +1,75 @@
+<?php
+/**
+ * First-run onboarding wizard state.
+ *
+ * @package CredentialVault
+ */
+
+declare( strict_types=1 );
+
+namespace CredentialVault;
+
+/**
+ * Tracks whether the operator completed vault onboarding.
+ */
+final class Onboarding {
+
+	private const OPTION = 'credential_vault_onboarding_done';
+
+	public static function is_complete(): bool {
+		return (bool) get_option( self::OPTION, false );
+	}
+
+	public static function mark_complete(): void {
+		update_option( self::OPTION, true, false );
+	}
+
+	public static function reset(): void {
+		delete_option( self::OPTION );
+	}
+
+	/**
+	 * @return list<array{key: string, done: bool, label: string}>
+	 */
+	public static function checklist(): array {
+		$api = Secrets_Bridge::is_available();
+		$sudo = Sudo_Gate::is_active();
+		$has_secret = $api && count( Secrets_Bridge::list_vault_secrets( false ) ) > 0;
+		$imported = $api && count( Plaintext_Scanner::scan() ) === 0;
+
+		return array(
+			array(
+				'key'   => 'api',
+				'done'  => $api,
+				'label' => __( 'Secrets API available', 'credvault' ),
+			),
+			array(
+				'key'   => 'sudo',
+				'done'  => $sudo,
+				'label' => __( 'Vault unlocked (sudo session)', 'credvault' ),
+			),
+			array(
+				'key'   => 'secret',
+				'done'  => $has_secret,
+				'label' => __( 'At least one credential stored', 'credvault' ),
+			),
+			array(
+				'key'   => 'hygiene',
+				'done'  => $imported,
+				'label' => __( 'No plaintext scanner hits (optional)', 'credvault' ),
+			),
+		);
+	}
+
+	public static function progress_percent(): int {
+		$items = self::checklist();
+		$done  = 0;
+		foreach ( $items as $item ) {
+			if ( ! empty( $item['done'] ) ) {
+				++$done;
+			}
+		}
+
+		return (int) round( ( $done / max( 1, count( $items ) ) ) * 100 );
+	}
+}

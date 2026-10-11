@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace CredentialVaultPro;
 
+use CredentialVault\Admin\Field_Help;
 use CredentialVault\Audit_Log;
 use CredentialVault\Secrets_Bridge;
 
@@ -72,15 +73,15 @@ final class Audit_Pro {
 			<input type="hidden" name="page" value="credential-vault" />
 			<input type="hidden" name="tab" value="audit" />
 			<label>
-				<?php esc_html_e( 'Action', 'credential-vault-pro' ); ?>
+				<?php echo Field_Help::inline( __( 'Action', 'credential-vault-pro' ), Field_Help::pro_tip( 'audit_filter_action' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<input type="text" name="audit_action" value="<?php echo esc_attr( (string) ( $filters['action'] ?? '' ) ); ?>" />
 			</label>
 			<label>
-				<?php esc_html_e( 'Credential contains', 'credential-vault-pro' ); ?>
+				<?php echo Field_Help::inline( __( 'Credential contains', 'credential-vault-pro' ), Field_Help::pro_tip( 'audit_filter_secret' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<input type="text" name="audit_secret" value="<?php echo esc_attr( (string) ( $filters['secret'] ?? '' ) ); ?>" />
 			</label>
 			<label>
-				<?php esc_html_e( 'User ID', 'credential-vault-pro' ); ?>
+				<?php echo Field_Help::inline( __( 'User ID', 'credential-vault-pro' ), Field_Help::pro_tip( 'audit_filter_user' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<input type="number" min="0" name="audit_user" value="<?php echo esc_attr( (string) (int) ( $filters['user_id'] ?? 0 ) ); ?>" />
 			</label>
 			<?php submit_button( __( 'Filter', 'credential-vault-pro' ), 'secondary', '', false ); ?>

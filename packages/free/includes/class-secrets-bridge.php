@@ -164,6 +164,21 @@ final class Secrets_Bridge {
 			);
 		}
 
+		/**
+		 * Block or defer a secret write (Pro approval queue).
+		 *
+		 * @param true|\WP_Error $gate    Default true.
+		 * @param string         $name    Fully qualified secret name.
+		 * @param bool           $network Network scope.
+		 */
+		$gate = apply_filters( 'credential_vault_before_set_secret', true, $name, $network );
+		if ( is_wp_error( $gate ) ) {
+			return $gate;
+		}
+		if ( true !== $gate ) {
+			return new \WP_Error( 'credential_vault_set_blocked', __( 'Secret write was blocked.', 'credvault' ) );
+		}
+
 		return $network ? wp_set_network_secret( $name, $value ) : wp_set_secret( $name, $value );
 	}
 
@@ -228,6 +243,88 @@ final class Secrets_Bridge {
 		return function_exists( 'wp_retire_secret_version' )
 			? wp_retire_secret_version( $name )
 			: new \WP_Error( 'credential_vault_no_api', __( 'Secret retirement is unavailable.', 'credvault' ) );
+	}
+
+	/**
+	 * Roll back to the previous slot when a rotated key fails verification.
+	 *
+	 * @return true|\WP_Error
+	 */
+	public static function promote_previous( string $name, bool $network = false ) {
+		if ( ! self::is_available() ) {
+			return new \WP_Error( 'credential_vault_no_api', __( 'The WordPress Secrets API is not available on this site.', 'credvault' ) );
+		}
+
+		if ( $network && function_exists( 'wp_promote_network_secret_version' ) ) {
+			return wp_promote_network_secret_version( $name );
+		}
+
+		if ( ! $network && function_exists( 'wp_promote_secret_version' ) ) {
+			return wp_promote_secret_version( $name );
+		}
+
+		$previous_version = 'previous';
+		if ( class_exists( 'WP_Secret_Version' ) ) {
+			$previous_version = \WP_Secret_Version::PREVIOUS;
+		}
+
+		$previous = self::get_scoped_secret( $name, $network, $previous_version );
+		if ( is_wp_error( $previous ) ) {
+			return $previous;
+		}
+		if ( null === $previous ) {
+			return new \WP_Error( 'credential_vault_no_previous', __( 'No previous secret slot is available to promote.', 'credvault' ) );
+		}
+
+		$plaintext = $previous->reveal();
+		if ( is_wp_error( $plaintext ) ) {
+			return $plaintext;
+		}
+
+		$result = self::set_secret( $name, $plaintext, $network );
+		self::memzero( $plaintext );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return self::retire_previous( $name, $network );
+	}
+
+	/**
+	 * Fine-grained vault action checks (Pro ACL / scoped tokens extend via filter).
+	 *
+	 * @param string $action      view|metadata|reveal|rotate|delete|manage.
+	 * @param string $secret_name Fully qualified secret name or empty for global.
+	 */
+	public static function user_can( string $action, string $secret_name = '', bool $network = false ): bool {
+		$action = sanitize_key( $action );
+
+		$allowed = false;
+		switch ( $action ) {
+			case 'view':
+			case 'metadata':
+				$allowed = self::current_user_can_view( $network );
+				break;
+			case 'reveal':
+			case 'rotate':
+			case 'delete':
+			case 'manage':
+				$allowed = self::current_user_can_manage( $network );
+				break;
+			default:
+				$allowed = self::current_user_can_manage( $network );
+		}
+
+		/**
+		 * Whether the current user (or API token) may perform a vault action.
+		 *
+		 * @param bool   $allowed     Default from capabilities.
+		 * @param string $action      Action key.
+		 * @param string $secret_name Fully qualified secret name.
+		 * @param bool   $network     Network scope.
+		 */
+		return (bool) apply_filters( 'credential_vault_user_can', $allowed, $action, $secret_name, $network );
 	}
 
 	/**

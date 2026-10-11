@@ -77,6 +77,50 @@ final class Duplicate_Detector {
 		return apply_filters( 'credential_vault_hygiene_issues', $issues );
 	}
 
+	/**
+	 * Suggest duplicate slugs by service label (plan only — no auto-merge).
+	 *
+	 * @return list<array{service: string, slugs: list<string>, suggestion: string}>
+	 */
+	public static function merge_plan(): array {
+		if ( ! Secrets_Bridge::is_available() ) {
+			return array();
+		}
+
+		$by_service = array();
+
+		foreach ( Secrets_Bridge::list_vault_secrets( false ) as $row ) {
+			$name = (string) $row['name'];
+			$meta = Credential_Meta::get( $name );
+			$service = sanitize_key( (string) ( $meta['service'] ?? 'custom' ) );
+			$slug    = basename( $name );
+
+			if ( ! isset( $by_service[ $service ] ) ) {
+				$by_service[ $service ] = array();
+			}
+			$by_service[ $service ][] = $slug;
+		}
+
+		$plan = array();
+		foreach ( $by_service as $service => $slugs ) {
+			$slugs = array_values( array_unique( $slugs ) );
+			if ( count( $slugs ) < 2 ) {
+				continue;
+			}
+
+			$plan[] = array(
+				'service'    => $service,
+				'slugs'      => $slugs,
+				'suggestion' => __( 'Review whether these slugs represent the same integration; retire duplicates after updating code references.', 'credvault' ),
+			);
+		}
+
+		/**
+		 * @param list<array{service: string, slugs: list<string>, suggestion: string}> $plan
+		 */
+		return apply_filters( 'credential_vault_dedupe_plan', $plan );
+	}
+
 	private static function vault_has_secret( string $name ): bool {
 		$secret = Secrets_Bridge::get_secret( $name );
 

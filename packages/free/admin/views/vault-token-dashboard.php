@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use CredentialVault\Admin\Field_Help;
 use CredentialVault\Credential_Meta;
 
 $integrations = Credential_Meta::token_integrations();
@@ -25,6 +26,30 @@ $base_url     = admin_url( 'admin.php?page=credential-vault' );
 $manage_url   = add_query_arg( 'tab', 'credentials', $base_url );
 
 include CREDENTIAL_VAULT_DIR . 'admin/views/vault-sudo-panel.php';
+include CREDENTIAL_VAULT_DIR . 'admin/views/vault-onboarding.php';
+
+if ( ! empty( $vault_health ) && is_array( $vault_health ) ) :
+	$attention = (int) ( $vault_health['overdue_rotate_by'] ?? 0 )
+		+ (int) ( $vault_health['plaintext_candidates'] ?? 0 )
+		+ (int) ( $vault_health['undecryptable'] ?? 0 );
+	if ( $attention > 0 ) :
+		?>
+		<div class="notice notice-warning inline">
+			<p>
+				<?php
+				esc_html_e( 'Vault health items need attention.', 'credvault' );
+				echo ' ';
+				printf(
+					'<a href="%s">%s</a>',
+					esc_url( admin_url( 'admin.php?page=credential-vault&tab=health' ) ),
+					esc_html__( 'View health summary', 'credvault' )
+				);
+				?>
+			</p>
+		</div>
+		<?php
+	endif;
+endif;
 
 ?>
 <p class="description">
@@ -53,7 +78,10 @@ include CREDENTIAL_VAULT_DIR . 'admin/views/vault-sudo-panel.php';
 			?>
 			<div class="new-vault-integration card">
 				<header class="new-vault-integration__head">
-					<h2 class="new-vault-integration__title"><?php echo esc_html( $integration['label'] ); ?></h2>
+					<h2 class="new-vault-integration__title new-vault-heading-tip">
+						<?php echo esc_html( $integration['label'] ); ?>
+						<?php echo Field_Help::icon( (string) $integration['description'] ); ?>
+					</h2>
 					<?php if ( $status['configured'] ) : ?>
 						<span class="new-vault-badge new-vault-badge--active"><?php esc_html_e( 'Configured', 'credvault' ); ?></span>
 					<?php else : ?>
@@ -63,7 +91,6 @@ include CREDENTIAL_VAULT_DIR . 'admin/views/vault-sudo-panel.php';
 						<span class="new-vault-badge new-vault-badge--warn"><?php esc_html_e( 'Rotate recommended', 'credvault' ); ?></span>
 					<?php endif; ?>
 				</header>
-				<p class="description"><?php echo esc_html( $integration['description'] ); ?></p>
 				<?php if ( $status['configured'] && $sudo_active && '' !== $status['masked_preview'] ) : ?>
 					<p>
 						<strong><?php esc_html_e( 'Preview:', 'credvault' ); ?></strong>

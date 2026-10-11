@@ -18,9 +18,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use CredentialVault\Admin\Field_Help;
 use CredentialVault\Credential_Meta;
+use CredentialVault\Environment_Guard;
+use CredentialVault\Integration_Snippets;
 use CredentialVault\Secrets_Bridge;
 use CredentialVault\Vault_Settings;
+
+$audit_activity = $audit_activity ?? array();
 
 $scope       = $scope ?? 'site';
 $can_manage  = $can_manage ?? Secrets_Bridge::current_user_can_manage();
@@ -31,19 +36,23 @@ $field_templates = Credential_Meta::service_field_templates();
 <table class="widefat striped new-vault-table">
 	<thead>
 		<tr>
+			<?php if ( $can_manage ) : ?>
+				<th class="check-column"><input type="checkbox" id="cv-bulk-all" aria-label="<?php esc_attr_e( 'Select all', 'credvault' ); ?>" /></th>
+			<?php endif; ?>
 			<th><?php esc_html_e( 'Label', 'credvault' ); ?></th>
 			<th><?php esc_html_e( 'Name', 'credvault' ); ?></th>
 			<th><?php esc_html_e( 'Preview', 'credvault' ); ?></th>
 			<th><?php esc_html_e( 'Fingerprint', 'credvault' ); ?></th>
 			<th><?php esc_html_e( 'Environment', 'credvault' ); ?></th>
 			<th><?php esc_html_e( 'Rotate by', 'credvault' ); ?></th>
+			<th><?php esc_html_e( 'Last activity', 'credvault' ); ?></th>
 			<th><?php esc_html_e( 'Rotation', 'credvault' ); ?></th>
 			<th><?php esc_html_e( 'Actions', 'credvault' ); ?></th>
 		</tr>
 	</thead>
 	<tbody>
 		<?php if ( empty( $credentials ) ) : ?>
-			<tr><td colspan="8"><?php esc_html_e( 'No credentials in this scope yet.', 'credvault' ); ?></td></tr>
+			<tr><td colspan="<?php echo $can_manage ? 10 : 9; ?>"><?php esc_html_e( 'No credentials in this scope yet.', 'credvault' ); ?></td></tr>
 		<?php else : ?>
 			<?php foreach ( $credentials as $row ) : ?>
 				<?php
@@ -63,8 +72,31 @@ $field_templates = Credential_Meta::service_field_templates();
 				$needs_rot = ! empty( $row['needs_rotation'] );
 				$in_vault  = 0 === strpos( $name, Secrets_Bridge::VAULT_NAMESPACE . '/' );
 				$overdue   = $rotate_by > 0 && $rotate_by < time();
+				$slug      = $in_vault ? basename( $name ) : sanitize_key( basename( $name ) );
+				$snippets  = $in_vault ? Integration_Snippets::for_slug( $slug, 'network' === $scope ) : array();
+				$activity  = $audit_activity[ $name ] ?? null;
+				$env_warn  = $in_vault ? Environment_Guard::mismatch_for_secret( $name ) : null;
+				$has_meta  = '' !== $owner || '' !== $notes || '' !== $runbook || ( is_array( $public ) && ! empty( $public ) );
+				$code_sample = '';
+				if ( ! empty( $snippets ) ) {
+					$parts = array_filter(
+						array(
+							(string) ( $snippets['php_get'] ?? '' ),
+							(string) ( $snippets['php_context'] ?? '' ),
+							(string) ( $snippets['php_adapter'] ?? '' ),
+						)
+					);
+					$code_sample = implode( "\n\n", $parts );
+				}
 				?>
 				<tr>
+					<?php if ( $can_manage ) : ?>
+						<th scope="row" class="check-column">
+							<?php if ( $in_vault ) : ?>
+								<input type="checkbox" class="cv-bulk-row" name="bulk_secrets[]" value="<?php echo esc_attr( $name ); ?>" form="cv-bulk-meta-form" />
+							<?php endif; ?>
+						</th>
+					<?php endif; ?>
 					<td>
 						<strong><?php echo esc_html( $label ); ?></strong>
 						<?php if ( $needs_rot ) : ?>
@@ -73,21 +105,42 @@ $field_templates = Credential_Meta::service_field_templates();
 						<?php if ( $overdue ) : ?>
 							<span class="new-vault-badge new-vault-badge--warn"><?php esc_html_e( 'Overdue', 'credvault' ); ?></span>
 						<?php endif; ?>
-						<?php if ( '' !== $owner ) : ?>
-							<p class="description"><?php echo esc_html( sprintf( __( 'Owner: %s', 'credvault' ), $owner ) ); ?></p>
+						<?php if ( null !== $env_warn ) : ?>
+							<span class="new-vault-badge new-vault-badge--warn" title="<?php echo esc_attr( $env_warn ); ?>"><?php esc_html_e( 'Env mismatch', 'credvault' ); ?></span>
 						<?php endif; ?>
-						<?php if ( '' !== $notes ) : ?>
-							<p class="description"><?php echo esc_html( $notes ); ?></p>
+						<?php if ( $has_meta ) : ?>
+							<details class="new-vault-meta-details">
+								<summary><?php esc_html_e( 'Notes & metadata', 'credvault' ); ?></summary>
+								<?php if ( '' !== $owner ) : ?>
+									<p class="description"><?php echo esc_html( sprintf( __( 'Owner: %s', 'credvault' ), $owner ) ); ?></p>
+								<?php endif; ?>
+								<?php if ( '' !== $notes ) : ?>
+									<p class="description"><?php echo esc_html( $notes ); ?></p>
+								<?php endif; ?>
+								<?php if ( '' !== $runbook ) : ?>
+									<p class="description"><a href="<?php echo esc_url( $runbook ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Runbook', 'credvault' ); ?></a></p>
+								<?php endif; ?>
+								<?php if ( is_array( $public ) && ! empty( $public ) ) : ?>
+									<ul class="new-vault-public-fields">
+										<?php foreach ( $public as $pk => $pv ) : ?>
+											<li><code><?php echo esc_html( (string) $pk ); ?></code>: <?php echo esc_html( (string) $pv ); ?></li>
+										<?php endforeach; ?>
+									</ul>
+								<?php endif; ?>
+							</details>
 						<?php endif; ?>
-						<?php if ( '' !== $runbook ) : ?>
-							<p class="description"><a href="<?php echo esc_url( $runbook ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Runbook', 'credvault' ); ?></a></p>
-						<?php endif; ?>
-						<?php if ( is_array( $public ) && ! empty( $public ) ) : ?>
-							<ul class="new-vault-public-fields">
-								<?php foreach ( $public as $pk => $pv ) : ?>
-									<li><code><?php echo esc_html( (string) $pk ); ?></code>: <?php echo esc_html( (string) $pv ); ?></li>
-								<?php endforeach; ?>
-							</ul>
+						<?php if ( '' !== $code_sample ) : ?>
+							<details class="new-vault-meta-details">
+								<summary class="new-vault-heading-tip">
+									<?php esc_html_e( 'Code samples', 'credvault' ); ?>
+									<?php
+									echo Field_Help::icon(
+										__( 'Copy into theme or plugin code. Secret values are never shown here.', 'credvault' )
+									);
+									?>
+								</summary>
+								<pre class="new-vault-code-sample"><code><?php echo esc_html( $code_sample ); ?></code></pre>
+							</details>
 						<?php endif; ?>
 					</td>
 					<td>
@@ -127,6 +180,16 @@ $field_templates = Credential_Meta::service_field_templates();
 						?>
 					</td>
 					<td>
+						<?php
+						if ( is_array( $activity ) && ! empty( $activity['time'] ) ) {
+							echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $activity['time'] ) );
+							echo '<br /><code class="description">' . esc_html( (string) ( $activity['action'] ?? '' ) ) . '</code>';
+						} else {
+							echo '—';
+						}
+						?>
+					</td>
+					<td>
 						<?php if ( $has_prev ) : ?>
 							<span class="new-vault-badge"><?php esc_html_e( 'Previous slot in use', 'credvault' ); ?></span>
 						<?php else : ?>
@@ -143,12 +206,12 @@ $field_templates = Credential_Meta::service_field_templates();
 									<input type="hidden" name="secret_name" value="<?php echo esc_attr( $name ); ?>" />
 									<input type="hidden" name="credential_scope" value="<?php echo esc_attr( $scope ); ?>" />
 									<p>
-										<label><?php esc_html_e( 'Label', 'credvault' ); ?>
+										<label><?php echo Field_Help::inline( __( 'Label', 'credvault' ), Field_Help::credential_tip( 'label' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 											<input type="text" name="credential_label" class="regular-text" value="<?php echo esc_attr( $label ); ?>" />
 										</label>
 									</p>
 									<p>
-										<label><?php esc_html_e( 'Environment', 'credvault' ); ?>
+										<label><?php echo Field_Help::inline( __( 'Environment', 'credvault' ), Field_Help::credential_tip( 'environment' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 											<select name="credential_environment">
 												<?php foreach ( $env_labels as $env_key => $env_label ) : ?>
 													<option value="<?php echo esc_attr( $env_key ); ?>" <?php selected( $env, $env_key ); ?>><?php echo esc_html( $env_label ); ?></option>
@@ -157,17 +220,17 @@ $field_templates = Credential_Meta::service_field_templates();
 										</label>
 									</p>
 									<p>
-										<label><?php esc_html_e( 'Rotate by', 'credvault' ); ?>
+										<label><?php echo Field_Help::inline( __( 'Rotate by', 'credvault' ), Field_Help::credential_tip( 'rotate_by' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 											<input type="date" name="credential_rotate_by" value="<?php echo esc_attr( $rotate_by > 0 ? gmdate( 'Y-m-d', $rotate_by ) : '' ); ?>" />
 										</label>
 									</p>
 									<p>
-										<label><?php esc_html_e( 'Owner', 'credvault' ); ?>
+										<label><?php echo Field_Help::inline( __( 'Owner', 'credvault' ), Field_Help::credential_tip( 'owner' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 											<input type="text" name="credential_owner" class="regular-text" value="<?php echo esc_attr( $owner ); ?>" />
 										</label>
 									</p>
 									<p>
-										<label><?php esc_html_e( 'Runbook URL', 'credvault' ); ?>
+										<label><?php echo Field_Help::inline( __( 'Runbook URL', 'credvault' ), Field_Help::credential_tip( 'runbook_url' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 											<input type="url" name="credential_runbook_url" class="large-text" value="<?php echo esc_attr( $runbook ); ?>" />
 										</label>
 									</p>
@@ -182,14 +245,14 @@ $field_templates = Credential_Meta::service_field_templates();
 											$val        = is_array( $public ) ? (string) ( $public[ $field_id ] ?? '' ) : '';
 											?>
 											<p>
-												<label><?php echo esc_html( (string) ( $field['label'] ?? $field_id ) ); ?>
+												<label><?php echo Field_Help::inline( (string) ( $field['label'] ?? $field_id ), Field_Help::credential_tip( $field_id ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 													<input type="text" name="<?php echo esc_attr( $input_name ); ?>" class="large-text" value="<?php echo esc_attr( $val ); ?>" />
 												</label>
 											</p>
 										<?php endforeach; ?>
 									<?php endif; ?>
 									<p>
-										<label><?php esc_html_e( 'Notes', 'credvault' ); ?>
+										<label><?php echo Field_Help::inline( __( 'Notes', 'credvault' ), Field_Help::credential_tip( 'notes' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 											<textarea name="credential_notes" rows="2" class="large-text"><?php echo esc_textarea( $notes ); ?></textarea>
 										</label>
 									</p>

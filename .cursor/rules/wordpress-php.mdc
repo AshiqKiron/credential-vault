@@ -8,8 +8,10 @@ alwaysApply: false
 
 - Edit shippable code under `packages/free/` or `packages/pro/` only.
 - Use `declare( strict_types=1 );`, WordPress coding standards, and `$wpdb->prepare()` for SQL.
-- Escape on output (`esc_html`, `esc_attr`, `esc_url`), sanitize on input, verify nonces and capabilities in admin/AJAX.
-- Hook pro code on `credential_vault_loaded`; text domains: `credvault` (free), `credential-vault-pro` (pro).
+- Escape on output (`esc_html`, `esc_attr`, `esc_url`), sanitize on input, verify nonces and capabilities in admin/AJAX/REST.
+- Secrets: read/write only via `CredentialVault\Secrets_Bridge`; audit programmatic reads; respect `credential_vault_user_can` and sudo gates.
+- Hook pro code on `credential_vault_loaded`; register new pro modules in `CredentialVaultPro\Plugin::register_pro_features()`.
+- Text domains: `credvault` (free), `credential-vault-pro` (pro).
 - After substantive changes, suggest `composer phpcs` on `packages/`.
 
 Canonical bootstrap: `@packages/free/credential-vault.php`, `@packages/pro/credential-vault-pro.php`.

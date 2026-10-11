@@ -79,6 +79,21 @@ final class Sudo_Gate {
 			);
 		}
 
+		/**
+		 * Require SSO / 2FA before vault sudo (Pro integrates via this filter).
+		 *
+		 * @param true|\WP_Error $gate     Default true.
+		 * @param \WP_User       $user     Current user.
+		 * @param string         $password Submitted password.
+		 */
+		$gate = apply_filters( 'credential_vault_before_sudo_establish', true, $user, $password );
+		if ( is_wp_error( $gate ) ) {
+			return $gate;
+		}
+		if ( true !== $gate ) {
+			return new \WP_Error( 'credential_vault_sudo_blocked', __( 'Additional verification is required before sudo.', 'credvault' ) );
+		}
+
 		if ( ! wp_check_password( $password, $user->user_pass, $user->ID ) ) {
 			self::record_failed_attempt( $user->ID );
 

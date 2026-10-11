@@ -29,6 +29,8 @@ final class Plugin {
 				array( 'back_link' => true )
 			);
 		}
+
+		Activator::activate();
 	}
 
 	public static function init(): void {
@@ -45,6 +47,23 @@ final class Plugin {
 	}
 
 	public static function register_pro_features(): void {
+		Audit_Store::register();
+		Api_Tokens::register();
+		Secret_Acl::register();
+		Approval_Queue::register();
+		Sso_Gate::register();
+		Rotation_Nudges::register();
+		Rotation_Automation::register();
+		Import_Jobs::register();
+		Env_Sync::register();
+		Plugin_Adapters::register();
+		Health_Monitor::register();
+		Anomaly_Monitor::register();
+		Siem_Export::register();
+		Compliance_Reports::register();
+		License_Seats::register();
+		Template_Credentials::register();
+		Multisite_Network::register();
 		Rest_Controller::register();
 		Sudo_Audit_Logger::register();
 		Sudo_Security_Validator::register();
@@ -52,6 +71,7 @@ final class Plugin {
 		Sudo_Audit_Admin::register();
 		Audit_Pro::register();
 		Webhooks::register();
+		Manifest_Webhooks::register();
 
 		add_filter(
 			'credential_vault_admin_context',

@@ -19,6 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use CredentialVault\Admin\Field_Help;
 use CredentialVault\Credential_Meta;
 use CredentialVault\Secrets_Bridge;
 use CredentialVault\Vault_Settings;
@@ -80,7 +81,7 @@ if ( $can_edit_secrets ) :
 			<input type="hidden" name="credential_scope" value="<?php echo esc_attr( $scope ); ?>" />
 			<table class="form-table" role="presentation">
 				<tr>
-					<th scope="row"><label for="credential_service"><?php esc_html_e( 'Service', 'credvault' ); ?></label></th>
+					<th scope="row"><?php echo Field_Help::th( __( 'Service', 'credvault' ), Field_Help::credential_tip( 'service' ), 'credential_service' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 					<td>
 						<select name="credential_service" id="credential_service">
 							<?php foreach ( $presets as $key => $preset_label ) : ?>
@@ -90,11 +91,11 @@ if ( $can_edit_secrets ) :
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="credential_label"><?php esc_html_e( 'Label', 'credvault' ); ?></label></th>
+					<th scope="row"><?php echo Field_Help::th( __( 'Label', 'credvault' ), Field_Help::credential_tip( 'label' ), 'credential_label' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 					<td><input name="credential_label" id="credential_label" type="text" class="regular-text" value="<?php echo esc_attr( $prefill_label ); ?>" /></td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="credential_slug"><?php esc_html_e( 'Slug', 'credvault' ); ?></label></th>
+					<th scope="row"><?php echo Field_Help::th( __( 'Slug', 'credvault' ), Field_Help::credential_tip( 'slug' ), 'credential_slug' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 					<td>
 						<code><?php echo esc_html( Secrets_Bridge::VAULT_NAMESPACE . '/' ); ?></code>
 						<input name="credential_slug" id="credential_slug" type="text" class="regular-text" pattern="[a-z0-9-]+" required value="<?php echo esc_attr( $prefill_slug ); ?>" />
@@ -110,17 +111,17 @@ if ( $can_edit_secrets ) :
 						$input_name = 'credential_public_' . $field_id;
 						?>
 						<tr class="cv-service-field" data-cv-service="<?php echo esc_attr( $service_key ); ?>" hidden>
-							<th scope="row"><label for="<?php echo esc_attr( $input_name ); ?>"><?php echo esc_html( (string) ( $field['label'] ?? $field_id ) ); ?></label></th>
+							<th scope="row"><?php echo Field_Help::th( (string) ( $field['label'] ?? $field_id ), Field_Help::credential_tip( $field_id ), $input_name ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 							<td><input name="<?php echo esc_attr( $input_name ); ?>" id="<?php echo esc_attr( $input_name ); ?>" type="text" class="large-text" autocomplete="off" /></td>
 						</tr>
 					<?php endforeach; ?>
 				<?php endforeach; ?>
 				<tr>
-					<th scope="row"><label for="credential_value" id="credential_value_label"><?php esc_html_e( 'Secret value', 'credvault' ); ?></label></th>
+					<th scope="row"><label for="credential_value" id="credential_value_label"><?php esc_html_e( 'Secret value', 'credvault' ); ?></label><?php echo Field_Help::icon( Field_Help::credential_tip( 'secret_value' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 					<td><input name="credential_value" id="credential_value" type="password" class="large-text" autocomplete="off" required /></td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="credential_environment"><?php esc_html_e( 'Environment', 'credvault' ); ?></label></th>
+					<th scope="row"><?php echo Field_Help::th( __( 'Environment', 'credvault' ), Field_Help::credential_tip( 'environment' ), 'credential_environment' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 					<td>
 						<select name="credential_environment" id="credential_environment">
 							<?php foreach ( Credential_Meta::environment_choices() as $env_key => $env_label ) : ?>
@@ -130,22 +131,21 @@ if ( $can_edit_secrets ) :
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="credential_rotate_by"><?php esc_html_e( 'Rotate by', 'credvault' ); ?></label></th>
+					<th scope="row"><?php echo Field_Help::th( __( 'Rotate by', 'credvault' ), Field_Help::credential_tip( 'rotate_by' ), 'credential_rotate_by' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 					<td>
 						<input name="credential_rotate_by" id="credential_rotate_by" type="date" />
-						<p class="description"><?php esc_html_e( 'Optional reminder date for agency rotation schedules.', 'credvault' ); ?></p>
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="credential_owner"><?php esc_html_e( 'Owner', 'credvault' ); ?></label></th>
+					<th scope="row"><?php echo Field_Help::th( __( 'Owner', 'credvault' ), Field_Help::credential_tip( 'owner' ), 'credential_owner' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 					<td><input name="credential_owner" id="credential_owner" type="text" class="regular-text" placeholder="<?php esc_attr_e( 'e.g. DevOps', 'credvault' ); ?>" /></td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="credential_runbook_url"><?php esc_html_e( 'Runbook URL', 'credvault' ); ?></label></th>
+					<th scope="row"><?php echo Field_Help::th( __( 'Runbook URL', 'credvault' ), Field_Help::credential_tip( 'runbook_url' ), 'credential_runbook_url' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 					<td><input name="credential_runbook_url" id="credential_runbook_url" type="url" class="large-text" placeholder="https://" /></td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="credential_notes"><?php esc_html_e( 'Notes', 'credvault' ); ?></label></th>
+					<th scope="row"><?php echo Field_Help::th( __( 'Notes', 'credvault' ), Field_Help::credential_tip( 'notes' ), 'credential_notes' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></th>
 					<td><textarea name="credential_notes" id="credential_notes" class="large-text" rows="3" placeholder="<?php esc_attr_e( 'e.g. Used by WooCommerce Stripe', 'credvault' ); ?>"></textarea></td>
 				</tr>
 			</table>
@@ -163,4 +163,7 @@ endif;
 ?>
 
 <h2><?php esc_html_e( 'Stored credentials', 'credvault' ); ?></h2>
-<?php include CREDENTIAL_VAULT_DIR . 'admin/partials/credentials-table.php'; ?>
+<?php
+include CREDENTIAL_VAULT_DIR . 'admin/partials/credentials-toolbar.php';
+include CREDENTIAL_VAULT_DIR . 'admin/partials/credentials-table.php';
+?>

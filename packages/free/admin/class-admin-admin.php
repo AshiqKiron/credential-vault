@@ -10,12 +10,17 @@ declare( strict_types=1 );
 namespace CredentialVault\Admin;
 
 use CredentialVault\Audit_Log;
+use CredentialVault\Demo_Data;
 use CredentialVault\Import_Candidates;
 use CredentialVault\Plaintext_Scanner;
 use CredentialVault\Duplicate_Detector;
 use CredentialVault\Secrets_Bridge;
 use CredentialVault\Sudo_Gate;
 use CredentialVault\Vault_Capabilities;
+use CredentialVault\Audit_Activity;
+use CredentialVault\Auditor_Experience;
+use CredentialVault\Credentials_Filter;
+use CredentialVault\Vault_Health;
 use CredentialVault\Vault_Settings;
 
 /**
@@ -71,6 +76,8 @@ final class Admin {
 			'meta_saved'      => __( 'Credential details updated.', 'credvault' ),
 			'webhooks_saved'  => __( 'Webhook settings saved.', 'credvault' ),
 			'settings_saved'  => __( 'Vault settings saved.', 'credvault' ),
+			'demo_installed'  => __( 'Demo credentials installed.', 'credvault' ),
+			'demo_removed'    => __( 'Demo credentials removed.', 'credvault' ),
 		);
 
 		if ( 'imported' === $code && isset( $_GET['count'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -78,6 +85,26 @@ final class Admin {
 			$messages['imported'] = sprintf(
 				/* translators: %d: number of secrets imported */
 				_n( '%d secret imported.', '%d secrets imported.', $count, 'credvault' ),
+				$count
+			);
+		}
+
+		if ( 'demo_installed' === $code && isset( $_GET['count'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$count   = (int) $_GET['count']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$skipped = isset( $_GET['skipped'] ) ? (int) $_GET['skipped'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$messages['demo_installed'] = sprintf(
+				/* translators: 1: number installed, 2: number skipped because slug already existed */
+				__( 'Demo data: %1$d credential(s) added, %2$d already present (left unchanged).', 'credvault' ),
+				$count,
+				$skipped
+			);
+		}
+
+		if ( 'demo_removed' === $code && isset( $_GET['count'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$count = (int) $_GET['count']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$messages['demo_removed'] = sprintf(
+				/* translators: %d: number of demo credentials removed */
+				_n( '%d demo credential removed.', '%d demo credentials removed.', $count, 'credvault' ),
 				$count
 			);
 		}
@@ -93,6 +120,13 @@ final class Admin {
 	public function render_vault_page(): void {
 		if ( ! Secrets_Bridge::current_user_can_view() ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'credvault' ) );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( (string) wp_unslash( $_GET['tab'] ) ) : 'dashboard';
+		if ( ! Auditor_Experience::tab_allowed( $tab ) ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=credential-vault&tab=audit' ) );
+			exit;
 		}
 
 		$can_manage    = Secrets_Bridge::current_user_can_manage();
@@ -120,6 +154,12 @@ final class Admin {
 			'hygiene_issues'      => $api_available ? Duplicate_Detector::find() : array(),
 			'audit_filters'       => self::audit_filters_from_request(),
 			'pro_active'          => defined( 'CREDENTIAL_VAULT_PRO_VERSION' ),
+			'demo_data_ui'        => Demo_Data::ui_enabled(),
+			'demo_data_installed' => Demo_Data::is_installed(),
+			'demo_data_count'     => count( Demo_Data::tracked_slugs() ),
+			'vault_health'        => Vault_Health::summary(),
+			'audit_activity'      => Audit_Activity::index_by_secret(),
+			'auditor_only'        => Auditor_Experience::is_auditor_only(),
 		);
 
 		/**
@@ -128,6 +168,13 @@ final class Admin {
 		 * @param array<string, mixed> $context Template variables.
 		 */
 		$context = apply_filters( 'credential_vault_admin_context', $context );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$filter_query = is_array( $_GET ) ? wp_unslash( $_GET ) : array();
+		if ( is_array( $filter_query ) ) {
+			$context['credentials']         = Credentials_Filter::apply( $context['credentials'], $filter_query );
+			$context['network_credentials'] = Credentials_Filter::apply( $context['network_credentials'], $filter_query );
+		}
 
 		// phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		extract( $context, EXTR_SKIP );
@@ -140,10 +187,12 @@ final class Admin {
 			return;
 		}
 
+		wp_enqueue_style( 'dashicons' );
+
 		wp_enqueue_style(
 			'credential-vault-admin',
 			CREDENTIAL_VAULT_URL . 'admin/css/admin.css',
-			array(),
+			array( 'dashicons' ),
 			CREDENTIAL_VAULT_VERSION
 		);
 
@@ -153,6 +202,14 @@ final class Admin {
 			array(),
 			CREDENTIAL_VAULT_VERSION,
 			true
+		);
+
+		wp_localize_script(
+			'credential-vault-admin',
+			'credentialVaultConfig',
+			array(
+				'clipboardClearSeconds' => (int) apply_filters( 'credential_vault_clipboard_clear_seconds', 60 ),
+			)
 		);
 
 		if ( Sudo_Gate::is_active()

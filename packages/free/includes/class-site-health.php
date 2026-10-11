@@ -38,6 +38,26 @@ final class Site_Health {
 			'test'  => array( self::class, 'test_needs_rotation' ),
 		);
 
+		$tests['direct']['credential_vault_plaintext'] = array(
+			'label' => __( 'Credential Vault: plaintext credential candidates', 'credvault' ),
+			'test'  => array( self::class, 'test_plaintext_candidates' ),
+		);
+
+		$tests['direct']['credential_vault_sudo_ttl'] = array(
+			'label' => __( 'Credential Vault: sudo session TTL', 'credvault' ),
+			'test'  => array( self::class, 'test_sudo_ttl' ),
+		);
+
+		$tests['direct']['credential_vault_audit_capacity'] = array(
+			'label' => __( 'Credential Vault: audit log capacity', 'credvault' ),
+			'test'  => array( self::class, 'test_audit_capacity' ),
+		);
+
+		$tests['direct']['credential_vault_manifest'] = array(
+			'label' => __( 'Credential Vault: secrets manifest', 'credvault' ),
+			'test'  => array( self::class, 'test_manifest' ),
+		);
+
 		return $tests;
 	}
 
@@ -101,6 +121,126 @@ final class Site_Health {
 			__( 'Credentials should be rotated', 'credvault' ),
 			'recommended',
 			'<p>' . esc_html__( 'These secrets were imported or flagged by the API as still exposed in old backups. Rotate the live credential with your provider.', 'credvault' ) . '</p>' . $list
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	public static function test_plaintext_candidates(): array {
+		$count = count( Plaintext_Scanner::scan() );
+		if ( 0 === $count ) {
+			return self::result(
+				'credential_vault_plaintext',
+				__( 'No plaintext credential candidates detected', 'credvault' ),
+				'good',
+				'<p>' . esc_html__( 'Option scanner found no likely API keys in wp_options.', 'credvault' ) . '</p>'
+			);
+		}
+
+		return self::result(
+			'credential_vault_plaintext',
+			__( 'Plaintext credential candidates found', 'credvault' ),
+			'recommended',
+			'<p>' . esc_html(
+				sprintf(
+					/* translators: %d: count */
+					_n(
+						'%d option may still store a secret in plaintext.',
+						'%d options may still store secrets in plaintext.',
+						$count,
+						'credvault'
+					),
+					$count
+				)
+			) . '</p>'
+			. '<p><a href="' . esc_url( admin_url( 'admin.php?page=credential-vault&tab=import' ) ) . '">' . esc_html__( 'Open import scanner', 'credvault' ) . '</a></p>'
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	public static function test_sudo_ttl(): array {
+		$ttl = Vault_Settings::sudo_ttl_seconds();
+		if ( $ttl >= 120 && $ttl <= 3600 ) {
+			return self::result(
+				'credential_vault_sudo_ttl',
+				__( 'Vault sudo TTL looks reasonable', 'credvault' ),
+				'good',
+				'<p>' . esc_html( sprintf( __( 'Current TTL: %d seconds.', 'credvault' ), $ttl ) ) . '</p>'
+			);
+		}
+
+		return self::result(
+			'credential_vault_sudo_ttl',
+			__( 'Review vault sudo TTL', 'credvault' ),
+			'recommended',
+			'<p>' . esc_html__( 'Very short or very long sudo sessions can frustrate operators or increase risk. Consider 5–30 minutes.', 'credvault' ) . '</p>'
+			. '<p><a href="' . esc_url( admin_url( 'admin.php?page=credential-vault&tab=settings' ) ) . '">' . esc_html__( 'Vault settings', 'credvault' ) . '</a></p>'
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	public static function test_audit_capacity(): array {
+		if ( ! Vault_Health::summary()['audit_near_capacity'] ) {
+			return self::result(
+				'credential_vault_audit_capacity',
+				__( 'Audit log has headroom', 'credvault' ),
+				'good',
+				'<p>' . esc_html__( 'The option-backed audit log is below 90% capacity.', 'credvault' ) . '</p>'
+			);
+		}
+
+		return self::result(
+			'credential_vault_audit_capacity',
+			__( 'Audit log is nearly full', 'credvault' ),
+			'recommended',
+			'<p>' . esc_html__( 'Export audit CSV and consider raising credential_vault_audit_max_entries or upgrading retention.', 'credvault' ) . '</p>'
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	public static function test_manifest(): array {
+		$path = ABSPATH . 'credvault.manifest.json';
+		if ( ! is_readable( $path ) ) {
+			return self::result(
+				'credential_vault_manifest',
+				__( 'No credvault.manifest.json in site root', 'credvault' ),
+				'good',
+				'<p>' . esc_html__( 'Optional: add a manifest for CI validation.', 'credvault' ) . '</p>'
+			);
+		}
+
+		$parsed = Secrets_Manifest::parse_file( $path );
+		if ( is_wp_error( $parsed ) ) {
+			return self::result(
+				'credential_vault_manifest',
+				__( 'Manifest file is invalid', 'credvault' ),
+				'critical',
+				'<p>' . esc_html( $parsed->get_error_message() ) . '</p>'
+			);
+		}
+
+		$result = Secrets_Manifest::validate( $parsed );
+		if ( ! empty( $result['errors'] ) ) {
+			return self::result(
+				'credential_vault_manifest',
+				__( 'Manifest validation failed', 'credvault' ),
+				'critical',
+				'<p>' . esc_html( implode( ' ', $result['errors'] ) ) . '</p>'
+			);
+		}
+
+		return self::result(
+			'credential_vault_manifest',
+			__( 'Manifest validates against vault', 'credvault' ),
+			'good',
+			'<p>' . esc_html__( 'credvault.manifest.json matches stored credentials.', 'credvault' ) . '</p>'
 		);
 	}
 

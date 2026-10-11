@@ -18,6 +18,10 @@ final class Audit_Log {
 
 	private const DEFAULT_MAX_ENTRIES = 500;
 
+	public static function option_name(): string {
+		return self::OPTION;
+	}
+
 	public static function register_hooks( Loader $loader ): void {
 		$loader->add_action( 'wp_secret_changed', self::class, 'on_secret_changed', 10, 7 );
 	}
@@ -87,6 +91,19 @@ final class Audit_Log {
 			return;
 		}
 
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 8 );
+			$frames = array();
+			foreach ( $trace as $frame ) {
+				if ( isset( $frame['file'], $frame['line'] ) ) {
+					$frames[] = wp_hash( $frame['file'] . ':' . $frame['line'] );
+				}
+			}
+			if ( ! empty( $frames ) ) {
+				$extra['caller_trace'] = array_slice( $frames, 0, 5 );
+			}
+		}
+
 		/**
 		 * Whether to append audit entries when code reads a vault credential.
 		 *
@@ -112,6 +129,15 @@ final class Audit_Log {
 		}
 
 		$log = self::apply_filters( $log, $filters );
+
+		/**
+		 * Merge supplemental audit rows (Pro long-retention store).
+		 *
+		 * @param list<array<string, mixed>> $log     Option-backed rows.
+		 * @param array<string, mixed>     $filters Query filters.
+		 */
+		$log = apply_filters( 'credential_vault_audit_merge_entries', $log, $filters );
+
 		$log = array_slice( $log, -1 * max( 1, $limit ) );
 
 		return array_reverse( $log );
@@ -129,6 +155,9 @@ final class Audit_Log {
 		}
 
 		$log = self::apply_filters( $log, $filters );
+
+		/** @see credential_vault_audit_merge_entries */
+		$log = apply_filters( 'credential_vault_audit_merge_entries', $log, $filters );
 
 		return array_reverse( $log );
 	}

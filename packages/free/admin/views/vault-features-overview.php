@@ -11,9 +11,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use CredentialVault\Admin\Field_Help;
+
 ?>
-<div class="new-vault-features card">
-	<h2><?php esc_html_e( 'How Credential Vault protects your site', 'credvault' ); ?></h2>
+<details class="new-vault-features card">
+	<summary class="new-vault-heading-tip">
+		<?php esc_html_e( 'How Credential Vault protects your site', 'credvault' ); ?>
+		<?php
+		echo Field_Help::icon(
+			__( 'Encrypted Secrets API storage, sudo re-auth, centralized dashboard, audit trail, and two-slot rotation.', 'credvault' )
+		);
+		?>
+	</summary>
 	<ul class="new-vault-features__list">
 		<li>
 			<strong><?php esc_html_e( 'Encrypted storage', 'credvault' ); ?></strong>
@@ -36,4 +45,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php esc_html_e( 'Two-slot rotation keeps the previous key available until you verify the new one and retire the old slot.', 'credvault' ); ?>
 		</li>
 	</ul>
-</div>
+</details>

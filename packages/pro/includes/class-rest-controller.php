@@ -11,6 +11,7 @@ namespace CredentialVaultPro;
 
 use CredentialVault\Audit_Log;
 use CredentialVault\Credential_Meta;
+use CredentialVault\Rotation_Workflow;
 use CredentialVault\Secrets_Bridge;
 use CredentialVault\Sudo_Gate;
 use WP_Error;
@@ -30,6 +31,7 @@ final class Rest_Controller {
 	}
 
 	public static function register_routes(): void {
+		Rest_Extended::register_routes();
 		register_rest_route(
 			self::NS,
 			'/secrets',
@@ -110,6 +112,13 @@ final class Rest_Controller {
 	 * @return array<string, array<string, mixed>>
 	 */
 	private static function secret_args(): array {
+		return self::secret_args_public();
+	}
+
+	/**
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function secret_args_public(): array {
 		return array(
 			'slug'           => array(
 				'type'     => 'string',
@@ -125,11 +134,13 @@ final class Rest_Controller {
 			'value'          => array(
 				'type' => 'string',
 			),
+			'auto_retire'      => array( 'type' => 'boolean' ),
+			'rollback_on_fail' => array( 'type' => 'boolean' ),
 		);
 	}
 
 	public static function can_manage(): bool {
-		return Secrets_Bridge::current_user_can_manage();
+		return Secrets_Bridge::user_can( 'manage' );
 	}
 
 	/**
@@ -193,6 +204,10 @@ final class Rest_Controller {
 		$network = 'network' === $request->get_param( 'scope' );
 		$name    = Secrets_Bridge::secret_name( (string) $request->get_param( 'slug' ) );
 
+		if ( ! Secrets_Bridge::user_can( 'rotate', $name, $network ) ) {
+			return new WP_Error( 'rest_forbidden', __( 'Insufficient permission.', 'credential-vault-pro' ), array( 'status' => 403 ) );
+		}
+
 		$preview = Secrets_Bridge::masked_preview( $value );
 		$result  = Secrets_Bridge::set_secret( $name, $value, $network );
 		Secrets_Bridge::memzero( $value );
@@ -203,12 +218,33 @@ final class Rest_Controller {
 
 		Credential_Meta::save( $name, (string) $request->get_param( 'slug' ), 'custom', $preview );
 
-		return new WP_REST_Response( array( 'name' => $name, 'rotated' => true ), 200 );
+		$test = Rotation_Workflow::run_post_save_test( $name, $network );
+		if ( is_wp_error( $test ) ) {
+			do_action( 'credential_vault_rotation_test_failed', $name, $network, $test );
+
+			return new WP_REST_Response(
+				array(
+					'name'    => $name,
+					'rotated' => true,
+					'test'    => array(
+						'ok'      => false,
+						'message' => $test->get_error_message(),
+					),
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response( array( 'name' => $name, 'rotated' => true, 'test' => array( 'ok' => true ) ), 200 );
 	}
 
 	public static function reveal_secret( WP_REST_Request $request ) {
 		$network = 'network' === $request->get_param( 'scope' );
 		$name    = Secrets_Bridge::secret_name( (string) $request->get_param( 'slug' ) );
+
+		if ( ! Secrets_Bridge::user_can( 'reveal', $name, $network ) ) {
+			return new WP_Error( 'rest_forbidden', __( 'Insufficient permission.', 'credential-vault-pro' ), array( 'status' => 403 ) );
+		}
 
 		$secret = $network ? Secrets_Bridge::get_network_secret( $name ) : Secrets_Bridge::get_secret( $name );
 

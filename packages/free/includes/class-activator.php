@@ -34,6 +34,7 @@ final class Activator {
 		}
 
 		Vault_Capabilities::grant_caps_on_activate();
+		Hygiene_Scheduler::schedule();
 
 		$admin = get_role( 'administrator' );
 		if ( $admin instanceof \WP_Role ) {

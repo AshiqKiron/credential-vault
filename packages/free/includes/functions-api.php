@@ -10,13 +10,21 @@ declare( strict_types=1 );
 use CredentialVault\Audit_Log;
 use CredentialVault\Credential_Meta;
 use CredentialVault\Secrets_Bridge;
+use CredentialVault\Test_Storage;
 
 if ( ! function_exists( 'credential_vault_available' ) ) {
 	/**
 	 * Whether encrypted credential storage is available.
 	 */
 	function credential_vault_available(): bool {
-		return Secrets_Bridge::is_available();
+		$available = Secrets_Bridge::is_available();
+
+		/**
+		 * Filter availability (test mode may force true).
+		 *
+		 * @param bool $available Default from Secrets API.
+		 */
+		return (bool) apply_filters( 'credential_vault_available', $available );
 	}
 }
 
@@ -27,8 +35,56 @@ if ( ! function_exists( 'credential_vault_get' ) ) {
 	 * @param string $slug    Vault slug (e.g. stripe-live), not the full secret name.
 	 * @param bool   $network Use network-scope storage on multisite.
 	 */
-	function credential_vault_get( string $slug, bool $network = false ): ?string {
-		if ( ! Secrets_Bridge::is_available() ) {
+	function credential_vault_get( string $slug, bool $network = false, array $context = array() ): ?string {
+		if ( Test_Storage::enabled() ) {
+			$value = Test_Storage::get_value( $slug, $network );
+			if ( null === $value ) {
+				return null;
+			}
+
+			$source = isset( $context['source'] ) ? (string) $context['source'] : 'credential_vault_get_test';
+			unset( $context['source'] );
+
+			Audit_Log::log_secret_queried(
+				Secrets_Bridge::secret_name( $slug ),
+				array_merge(
+					array(
+						'slug'    => $slug,
+						'network' => $network,
+						'source'  => $source,
+					),
+					$context
+				)
+			);
+
+			return $value;
+		}
+
+		/**
+		 * Short-circuit get.
+		 *
+		 * @param null|string $pre     Return non-null string to skip storage.
+		 * @param string      $slug    Vault slug.
+		 * @param bool        $network Network scope.
+		 */
+		$pre = apply_filters( 'pre_credential_vault_get', null, $slug, $network );
+		if ( is_string( $pre ) ) {
+			Audit_Log::log_secret_queried(
+				Secrets_Bridge::secret_name( $slug ),
+				array_merge(
+					array(
+						'slug'    => $slug,
+						'network' => $network,
+						'source'  => 'credential_vault_get',
+					),
+					$context
+				)
+			);
+
+			return $pre;
+		}
+
+		if ( ! credential_vault_available() ) {
 			return null;
 		}
 
@@ -47,12 +103,18 @@ if ( ! function_exists( 'credential_vault_get' ) ) {
 			return null;
 		}
 
+		$source = isset( $context['source'] ) ? (string) $context['source'] : 'credential_vault_get';
+		unset( $context['source'] );
+
 		Audit_Log::log_secret_queried(
 			$name,
-			array(
-				'slug'    => $slug,
-				'network' => $network,
-				'source'  => 'credential_vault_get',
+			array_merge(
+				array(
+					'slug'    => $slug,
+					'network' => $network,
+					'source'  => $source,
+				),
+				$context
 			)
 		);
 
@@ -71,7 +133,17 @@ if ( ! function_exists( 'credential_vault_set' ) ) {
 	 * @return true|\WP_Error
 	 */
 	function credential_vault_set( string $slug, string $value, bool $network = false, array $meta = array() ) {
-		if ( ! Secrets_Bridge::is_available() ) {
+		/**
+		 * Short-circuit set (in-memory test mode).
+		 *
+		 * @param true|\WP_Error|null $pre
+		 */
+		$pre = apply_filters( 'pre_credential_vault_set', null, $slug, $value, $network, $meta );
+		if ( null !== $pre ) {
+			return $pre;
+		}
+
+		if ( ! credential_vault_available() ) {
 			return new \WP_Error( 'credential_vault_no_api', __( 'The WordPress Secrets API is not available.', 'credvault' ) );
 		}
 

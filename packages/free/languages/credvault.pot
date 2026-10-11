@@ -3,24 +3,1888 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Credential Vault 1.0.0\n"
-"Report-Msgid-Bugs-To: https://asphaltthemes.com/credential-vault\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/credvault\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-01-01T00:00:00+00:00\n"
+"POT-Creation-Date: 2026-10-11T23:00:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: credvault\n"
 
-#: admin/class-admin-admin.php
-msgid "New"
+#. Plugin Name of the plugin
+#: credential-vault.php
+#: admin/class-admin-admin.php:33
+#: admin/class-admin-admin.php:34
+#: admin/class-dashboard-widget.php:32
+#: admin/views/vault-dashboard.php:48
+#: includes/class-site-health.php:137
+msgid "Credential Vault"
 msgstr ""
 
-#: admin/class-admin-admin.php
+#. Plugin URI of the plugin
+#: credential-vault.php
+msgid "https://asphaltthemes.com/credential-vault"
+msgstr ""
+
+#. Description of the plugin
+#: credential-vault.php
+msgid "Admin dashboard for the WordPress Secrets API — encrypted API keys, sudo re-auth, rotation, and audit log."
+msgstr ""
+
+#. Author of the plugin
+#: credential-vault.php
+msgid "ashiquzzaman"
+msgstr ""
+
+#. Author URI of the plugin
+#: credential-vault.php
+msgid "https://asphaltthemes.com"
+msgstr ""
+
+#: admin/class-admin-admin.php:63
+msgid "Vault unlocked. Sensitive actions are available for a limited time."
+msgstr ""
+
+#: admin/class-admin-admin.php:64
+msgid "Sudo session ended."
+msgstr ""
+
+#: admin/class-admin-admin.php:65
+msgid "Credential saved."
+msgstr ""
+
+#: admin/class-admin-admin.php:66
+msgid "Credential deleted."
+msgstr ""
+
+#: admin/class-admin-admin.php:67
+msgid "Previous rotation slot cleared."
+msgstr ""
+
+#: admin/class-admin-admin.php:68
+msgid "Credential updated. Previous key kept in the rotation slot until you retire it."
+msgstr ""
+
+#: admin/class-admin-admin.php:69
+msgid "Credential saved, but the post-rotation test reported a problem. Confirm integrations before retiring the previous slot."
+msgstr ""
+
+#: admin/class-admin-admin.php:70
+msgid "Credential ready to copy — use the prompt if auto-copy did not run."
+msgstr ""
+
+#: admin/class-admin-admin.php:71
+msgid "Import completed."
+msgstr ""
+
+#: admin/class-admin-admin.php:72
+msgid "Credential details updated."
+msgstr ""
+
+#: admin/class-admin-admin.php:73
+msgid "Webhook settings saved."
+msgstr ""
+
+#: admin/class-admin-admin.php:74
+msgid "Vault settings saved."
+msgstr ""
+
+#: admin/class-admin-admin.php:75
+msgid "Demo credentials installed."
+msgstr ""
+
+#: admin/class-admin-admin.php:76
+msgid "Demo credentials removed."
+msgstr ""
+
+#. translators: %d: number of secrets imported
+#: admin/class-admin-admin.php:83
+#, php-format
+msgid "%d secret imported."
+msgid_plural "%d secrets imported."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: 1: number installed, 2: number skipped because slug already existed
+#: admin/class-admin-admin.php:93
+#, php-format
+msgid "Demo data: %1$d credential(s) added, %2$d already present (left unchanged)."
+msgstr ""
+
+#. translators: %d: number of demo credentials removed
+#: admin/class-admin-admin.php:103
+#, php-format
+msgid "%d demo credential removed."
+msgid_plural "%d demo credentials removed."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-admin-admin.php:118
 msgid "You do not have permission to access this page."
 msgstr ""
 
-#: admin/class-admin-admin.php
-msgid "Plugin scaffolding is active. Replace this screen with your settings UI."
+#: admin/class-admin-admin.php:198
+msgid "Credential copied. Clear your clipboard when finished."
+msgstr ""
+
+#. translators: %s: time remaining
+#: admin/class-admin-bar-sudo.php:39
+#, php-format
+msgid "Vault sudo: %s left"
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:72
+msgid "You do not have permission to manage credentials."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:80
+msgid "You do not have permission to view the credential vault."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:135
+msgid "Slug and credential value are required."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:141
+msgid "You cannot manage network credentials."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:211
+#: admin/class-admin-vault-actions.php:237
+#: admin/class-admin-vault-actions.php:262
+#: admin/class-admin-vault-actions.php:408
+msgid "Invalid credential."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:270
+msgid "Credential could not be loaded."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:311
+msgid "Select at least one option to import."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:341
+msgid "Import failed for all selected options."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:360
+msgid "Select at least one scan result to import."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:391
+msgid "Import failed for all selected scan results."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:461
+msgid "Could not encode metadata export."
+msgstr ""
+
+#: admin/class-admin-vault-actions.php:493
+#: admin/class-admin-vault-actions.php:518
+msgid "Demo data tools are disabled."
+msgstr ""
+
+#: admin/class-dashboard-widget.php:42
+#, php-format
+msgid "API: %s"
+msgstr ""
+
+#: admin/class-dashboard-widget.php:42
+msgid "available"
+msgstr ""
+
+#: admin/class-dashboard-widget.php:42
+msgid "missing"
+msgstr ""
+
+#: admin/class-dashboard-widget.php:43
+#, php-format
+msgid "Site credentials: %d"
+msgstr ""
+
+#: admin/class-dashboard-widget.php:44
+#, php-format
+msgid "Overdue rotation: %d"
+msgstr ""
+
+#: admin/class-dashboard-widget.php:45
+#: admin/views/vault-health.php:38
+#, php-format
+msgid "Plaintext candidates: %d"
+msgstr ""
+
+#: admin/class-dashboard-widget.php:46
+#, php-format
+msgid "Undecryptable: %d"
+msgstr ""
+
+#: admin/class-dashboard-widget.php:48
+msgid "Open vault health"
+msgstr ""
+
+#: admin/class-developer-admin.php:29
+msgid "Developer"
+msgstr ""
+
+#: admin/class-features-admin.php:36
+msgid "Health"
+msgstr ""
+
+#: admin/class-features-admin.php:37
+msgid "Migration"
+msgstr ""
+
+#: admin/class-features-admin.php:47
+msgid "This tab is not available in auditor mode."
+msgstr ""
+
+#: admin/class-features-admin.php:60
+msgid "Migration tools require manage access."
+msgstr ""
+
+#: admin/class-field-help.php:64
+msgid "Preset that adjusts the secret field label and optional public metadata fields (for example AWS access key ID)."
+msgstr ""
+
+#: admin/class-field-help.php:65
+msgid "Friendly name shown in the vault list and exports. Does not affect the slug used in code."
+msgstr ""
+
+#: admin/class-field-help.php:66
+msgid "Stable identifier after the app/ namespace. Use lowercase letters and hyphens only; referenced by credential_vault_get() and REST."
+msgstr ""
+
+#: admin/class-field-help.php:67
+msgid "Encrypted value stored in the WordPress Secrets API. Never shown in the audit log or metadata export."
+msgstr ""
+
+#: admin/class-field-help.php:68
+msgid "Optional tag for production, staging, or local workflows. Shown as a badge on the dashboard."
+msgstr ""
+
+#: admin/class-field-help.php:69
+msgid "Optional reminder date for agency rotation schedules. Does not rotate automatically; webhooks and emails may notify when this date passes."
+msgstr ""
+
+#: admin/class-field-help.php:70
+msgid "Team or person accountable for this credential (for example DevOps or client contact)."
+msgstr ""
+
+#: admin/class-field-help.php:71
+msgid "Link to internal docs or a runbook describing how to rotate or revoke this secret."
+msgstr ""
+
+#: admin/class-field-help.php:72
+msgid "Free-form context for admins. Stored in metadata only, not in the encrypted secret payload."
+msgstr ""
+
+#: admin/class-field-help.php:73
+msgid "Public AWS access key ID paired with the secret access key. Stored in metadata, not encrypted with the secret value."
+msgstr ""
+
+#: admin/class-field-help.php:74
+msgid "Destination URL for this integration webhook. Stored in metadata for reference."
+msgstr ""
+
+#: admin/class-field-help.php:75
+msgid "OAuth client ID paired with the client secret. Stored in metadata."
+msgstr ""
+
+#: admin/class-field-help.php:83
+msgid "How long unlock lasts after password confirmation. Allowed range: 60–3600 seconds (default 600)."
+msgstr ""
+
+#: admin/class-field-help.php:84
+msgid "Controls when sudo (password re-entry) is required for vault actions."
+msgstr ""
+
+#: admin/class-field-help.php:85
+msgid "Imports, saves, metadata edits, copy, and reveal all require an active sudo session after password confirmation."
+msgstr ""
+
+#: admin/class-field-help.php:86
+msgid "Only reveal and copy require sudo. Saving metadata, rotating keys, and imports use capability checks without sudo."
+msgstr ""
+
+#: admin/partials/credentials-table.php:36
+#: admin/partials/credentials-table.php:179
+#: admin/partials/credentials-toolbar.php:61
+#: admin/views/vault-developer.php:43
+#: admin/views/vault-scope-panel.php:94
+msgid "Label"
+msgstr ""
+
+#: admin/partials/credentials-table.php:37
+#: admin/views/vault-health.php:77
+msgid "Name"
+msgstr ""
+
+#: admin/partials/credentials-table.php:38
+#: admin/views/vault-import.php:135
+msgid "Preview"
+msgstr ""
+
+#: admin/partials/credentials-table.php:39
+msgid "Fingerprint"
+msgstr ""
+
+#: admin/partials/credentials-table.php:40
+#: admin/partials/credentials-table.php:184
+#: admin/partials/credentials-toolbar.php:40
+#: admin/partials/credentials-toolbar.php:78
+#: admin/views/vault-scope-panel.php:124
+msgid "Environment"
+msgstr ""
+
+#: admin/partials/credentials-table.php:41
+#: admin/partials/credentials-table.php:193
+#: admin/partials/credentials-toolbar.php:63
+#: admin/partials/credentials-toolbar.php:88
+#: admin/views/vault-scope-panel.php:134
+msgid "Rotate by"
+msgstr ""
+
+#: admin/partials/credentials-table.php:42
+msgid "Rotation"
+msgstr ""
+
+#: admin/partials/credentials-table.php:43
+msgid "Actions"
+msgstr ""
+
+#: admin/partials/credentials-table.php:48
+msgid "No credentials in this scope yet."
+msgstr ""
+
+#: admin/partials/credentials-table.php:86
+#: admin/views/vault-token-dashboard.php:67
+msgid "Rotate recommended"
+msgstr ""
+
+#: admin/partials/credentials-table.php:89
+msgid "Overdue"
+msgstr ""
+
+#: admin/partials/credentials-table.php:93
+msgid "Notes & metadata"
+msgstr ""
+
+#: admin/partials/credentials-table.php:95
+#, php-format
+msgid "Owner: %s"
+msgstr ""
+
+#: admin/partials/credentials-table.php:101
+msgid "Runbook"
+msgstr ""
+
+#: admin/partials/credentials-table.php:115
+msgid "Code samples"
+msgstr ""
+
+#: admin/partials/credentials-table.php:118
+msgid "Copy into theme or plugin code. Secret values are never shown here."
+msgstr ""
+
+#: admin/partials/credentials-table.php:164
+msgid "Previous slot in use"
+msgstr ""
+
+#: admin/partials/credentials-table.php:172
+msgid "Details"
+msgstr ""
+
+#: admin/partials/credentials-table.php:198
+#: admin/partials/credentials-toolbar.php:91
+#: admin/views/vault-scope-panel.php:140
+msgid "Owner"
+msgstr ""
+
+#: admin/partials/credentials-table.php:203
+#: admin/views/vault-scope-panel.php:144
+msgid "Runbook URL"
+msgstr ""
+
+#: admin/partials/credentials-table.php:225
+#: admin/views/vault-scope-panel.php:148
+msgid "Notes"
+msgstr ""
+
+#: admin/partials/credentials-table.php:229
+msgid "Save details"
+msgstr ""
+
+#: admin/partials/credentials-table.php:245
+msgid "Rotate"
+msgstr ""
+
+#: admin/partials/credentials-table.php:253
+msgid "Copy"
+msgstr ""
+
+#: admin/partials/credentials-table.php:261
+msgid "Retire previous"
+msgstr ""
+
+#: admin/partials/credentials-table.php:265
+msgid "Delete this credential permanently?"
+msgstr ""
+
+#: admin/partials/credentials-table.php:270
+msgid "Delete"
+msgstr ""
+
+#: admin/partials/credentials-table.php:274
+msgid "Owned by another plugin"
+msgstr ""
+
+#: admin/partials/credentials-table.php:276
+msgid "Unlock to manage"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:36
+msgid "Search"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:42
+msgid "Any"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:49
+msgid "Filter"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:51
+msgid "All"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:52
+msgid "Overdue rotate-by"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:53
+msgid "Needs rotation flag"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:54
+msgid "Previous slot active"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:55
+msgid "Environment mismatch"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:59
+msgid "Sort"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:62
+#: admin/views/vault-scope-panel.php:98
+msgid "Slug"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:64
+msgid "Last activity"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:67
+msgid "Apply"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:72
+msgid "Bulk update metadata"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:76
+msgid "Select credentials in the table below, then set shared metadata (does not change secret values)."
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:80
+msgid "— No change —"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:92
+msgid "Leave blank for no change"
+msgstr ""
+
+#: admin/partials/credentials-toolbar.php:95
+msgid "Update selected"
+msgstr ""
+
+#: admin/views/vault-audit.php:21
+msgid "Privacy: the audit log stores timestamps, action names, user IDs, secret names, and cryptographic fingerprints — never plaintext secret values. Export only what you need for compliance reviews."
+msgstr ""
+
+#: admin/views/vault-audit.php:38
+msgid "Export CSV"
+msgstr ""
+
+#: admin/views/vault-audit.php:44
+msgid "Time"
+msgstr ""
+
+#: admin/views/vault-audit.php:45
+msgid "Action"
+msgstr ""
+
+#: admin/views/vault-audit.php:46
+msgid "Credential"
+msgstr ""
+
+#: admin/views/vault-audit.php:47
+msgid "User"
+msgstr ""
+
+#: admin/views/vault-audit.php:48
+msgid "Fingerprints"
+msgstr ""
+
+#: admin/views/vault-audit.php:53
+msgid "No events recorded yet."
+msgstr ""
+
+#: admin/views/vault-audit.php:76
+msgid "System"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:55
+msgid "Install WordPress 7.2 or the Secrets API feature plugin to enable encrypted credential storage."
+msgstr ""
+
+#: admin/views/vault-dashboard.php:56
+msgid "Secrets API on GitHub"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:61
+msgid "Storage:"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:64
+msgid "Read-only provider"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:67
+msgid "Pro"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:73
+msgid "Token dashboard"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:74
+msgid "Site credentials"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:76
+msgid "Network"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:79
+msgid "Import"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:82
+msgid "Other secrets"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:84
+msgid "Audit log"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:86
+msgid "Settings"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:112
+msgid "Secrets registered by other plugins"
+msgstr ""
+
+#: admin/views/vault-dashboard.php:113
+msgid "Read-only inventory from wp_list_secrets(). Manage values in the owning plugin or via WP-CLI."
+msgstr ""
+
+#: admin/views/vault-dashboard.php:131
+msgid "This site may inherit network-scoped credentials when a site-specific slug is not configured. Check the Network tab for shared secrets."
+msgstr ""
+
+#: admin/views/vault-developer.php:19
+msgid "Secrets manifest (CI / Git)"
+msgstr ""
+
+#: admin/views/vault-developer.php:21
+msgid "Commit a metadata-only manifest (no secret values). Validate in CI with:"
+msgstr ""
+
+#. translators: %s: example filename
+#: admin/views/vault-developer.php:28
+#, php-format
+msgid "Example file: %s in the plugin docs folder."
+msgstr ""
+
+#: admin/views/vault-developer.php:34
+msgid "Found credvault.manifest.json in site root"
+msgstr ""
+
+#: admin/views/vault-developer.php:39
+msgid "Where credentials live (migration map)"
+msgstr ""
+
+#: admin/views/vault-developer.php:44
+#: admin/views/vault-import.php:36
+#: admin/views/vault-import.php:132
+msgid "Source"
+msgstr ""
+
+#: admin/views/vault-developer.php:45
+msgid "Suggested slug"
+msgstr ""
+
+#: admin/views/vault-developer.php:46
+msgid "In vault"
+msgstr ""
+
+#: admin/views/vault-developer.php:51
+msgid "No mapped sources detected."
+msgstr ""
+
+#: admin/views/vault-developer.php:58
+msgid "Yes"
+msgstr ""
+
+#: admin/views/vault-developer.php:58
+msgid "No"
+msgstr ""
+
+#: admin/views/vault-features-overview.php:19
+msgid "How Credential Vault protects your site"
+msgstr ""
+
+#: admin/views/vault-features-overview.php:22
+msgid "Encrypted Secrets API storage, sudo re-auth, centralized dashboard, audit trail, and two-slot rotation."
+msgstr ""
+
+#: admin/views/vault-features-overview.php:28
+msgid "Encrypted storage"
+msgstr ""
+
+#: admin/views/vault-features-overview.php:29
+msgid "API keys live in the WordPress Secrets API instead of plain text in wp_options, using core encryption primitives."
+msgstr ""
+
+#: admin/views/vault-features-overview.php:32
+msgid "Sudo mode"
+msgstr ""
+
+#: admin/views/vault-features-overview.php:33
+msgid "Administrators re-enter their password before viewing, copying, or changing production secrets."
+msgstr ""
+
+#: admin/views/vault-features-overview.php:36
+msgid "Central dashboard"
+msgstr ""
+
+#: admin/views/vault-features-overview.php:37
+msgid "Stripe, OpenAI, AWS, and other tokens are managed from one screen instead of scattered plugin settings."
+msgstr ""
+
+#: admin/views/vault-features-overview.php:40
+msgid "Audit trail"
+msgstr ""
+
+#: admin/views/vault-features-overview.php:41
+msgid "Every query, update, rotation, and sudo session is logged with timestamps and user IDs."
+msgstr ""
+
+#: admin/views/vault-features-overview.php:44
+msgid "Safe rotation"
+msgstr ""
+
+#: admin/views/vault-features-overview.php:45
+msgid "Two-slot rotation keeps the previous key available until you verify the new one and retire the old slot."
+msgstr ""
+
+#: admin/views/vault-health.php:21
+msgid "Vault health"
+msgstr ""
+
+#: admin/views/vault-health.php:22
+msgid "Operational snapshot — no secret values are shown."
+msgstr ""
+
+#: admin/views/vault-health.php:26
+msgid "Storage"
+msgstr ""
+
+#: admin/views/vault-health.php:28
+#, php-format
+msgid "Secrets API: %s"
+msgstr ""
+
+#: admin/views/vault-health.php:28
+#: admin/views/vault-health.php:30
+msgid "yes"
+msgstr ""
+
+#: admin/views/vault-health.php:28
+#: admin/views/vault-health.php:30
+msgid "no"
+msgstr ""
+
+#: admin/views/vault-health.php:29
+#, php-format
+msgid "Provider: %s"
+msgstr ""
+
+#: admin/views/vault-health.php:30
+#, php-format
+msgid "Writable: %s"
+msgstr ""
+
+#: admin/views/vault-health.php:31
+#, php-format
+msgid "Site / network credentials: %1$d / %2$d"
+msgstr ""
+
+#: admin/views/vault-health.php:35
+msgid "Risk indicators"
+msgstr ""
+
+#: admin/views/vault-health.php:37
+#, php-format
+msgid "Overdue rotate-by: %d"
+msgstr ""
+
+#: admin/views/vault-health.php:39
+#, php-format
+msgid "Duplicate hygiene issues: %d"
+msgstr ""
+
+#: admin/views/vault-health.php:40
+#, php-format
+msgid "Undecryptable secrets: %d"
+msgstr ""
+
+#: admin/views/vault-health.php:41
+#, php-format
+msgid "Environment mismatches: %d"
+msgstr ""
+
+#: admin/views/vault-health.php:42
+#, php-format
+msgid "Config constant names detected: %d"
+msgstr ""
+
+#: admin/views/vault-health.php:46
+msgid "Hygiene schedule"
+msgstr ""
+
+#: admin/views/vault-health.php:50
+#, php-format
+msgid "Last weekly scan: %s"
+msgstr ""
+
+#: admin/views/vault-health.php:52
+msgid "Weekly scan has not run yet."
+msgstr ""
+
+#: admin/views/vault-health.php:55
+#, php-format
+msgid "New findings since previous scan: %d"
+msgstr ""
+
+#: admin/views/vault-health.php:60
+msgid "Environment mismatches"
+msgstr ""
+
+#: admin/views/vault-health.php:62
+msgid "Secret"
+msgstr ""
+
+#: admin/views/vault-health.php:62
+msgid "Issue"
+msgstr ""
+
+#: admin/views/vault-health.php:75
+msgid "Constants / env var names (values not read)"
+msgstr ""
+
+#: admin/views/vault-health.php:77
+msgid "File"
+msgstr ""
+
+#: admin/views/vault-health.php:77
+msgid "Kind"
+msgstr ""
+
+#: admin/views/vault-import.php:29
+msgid "Duplicate / orphan hygiene"
+msgstr ""
+
+#: admin/views/vault-import.php:30
+msgid "These sources still hold plaintext while the vault already stores the same integration."
+msgstr ""
+
+#: admin/views/vault-import.php:34
+msgid "Integration"
+msgstr ""
+
+#: admin/views/vault-import.php:35
+msgid "Vault name"
+msgstr ""
+
+#: admin/views/vault-import.php:62
+msgid "Import from options table"
+msgstr ""
+
+#: admin/views/vault-import.php:64
+msgid "Moves known plaintext options into the Secrets API. Source options are left unchanged; imported secrets are flagged for rotation."
+msgstr ""
+
+#: admin/views/vault-import.php:67
+#: admin/views/vault-import.php:119
+#: admin/views/vault-migrate.php:23
+msgid "Secrets API required."
+msgstr ""
+
+#: admin/views/vault-import.php:69
+msgid "Unlock the vault to import."
+msgstr ""
+
+#: admin/views/vault-import.php:78
+msgid "Option"
+msgstr ""
+
+#: admin/views/vault-import.php:79
+#: admin/views/vault-import.php:136
+msgid "Secret name"
+msgstr ""
+
+#: admin/views/vault-import.php:80
+msgid "Status"
+msgstr ""
+
+#: admin/views/vault-import.php:96
+msgid "Not found"
+msgstr ""
+
+#: admin/views/vault-import.php:98
+msgid "Not a string (manual migration)"
+msgstr ""
+
+#: admin/views/vault-import.php:100
+msgid "Ready"
+msgstr ""
+
+#: admin/views/vault-import.php:108
+msgid "Import selected"
+msgstr ""
+
+#: admin/views/vault-import.php:114
+msgid "Plaintext scanner"
+msgstr ""
+
+#: admin/views/vault-import.php:116
+msgid "Heuristic scan of wp_options, user meta, and common plugin options for API-key-shaped values. Only masked previews are shown; import moves selected rows into encrypted storage."
+msgstr ""
+
+#: admin/views/vault-import.php:121
+msgid "No likely plaintext API keys detected in the curated list or option name scan."
+msgstr ""
+
+#: admin/views/vault-import.php:123
+msgid "Unlock the vault to import scan results."
+msgstr ""
+
+#: admin/views/vault-import.php:133
+msgid "Type"
+msgstr ""
+
+#: admin/views/vault-import.php:134
+msgid "Match"
+msgstr ""
+
+#: admin/views/vault-import.php:154
+msgid "Import selected scan results"
+msgstr ""
+
+#: admin/views/vault-migrate.php:19
+msgid "Migration bundles"
+msgstr ""
+
+#: admin/views/vault-migrate.php:20
+msgid "Password-protected AES-256-GCM bundles for moving metadata and optional secret values between environments. All imports are audited."
+msgstr ""
+
+#: admin/views/vault-migrate.php:28
+msgid "Export bundle"
+msgstr ""
+
+#: admin/views/vault-migrate.php:33
+msgid "Encryption password"
+msgstr ""
+
+#: admin/views/vault-migrate.php:37
+msgid "Include secret values (requires active sudo)"
+msgstr ""
+
+#: admin/views/vault-migrate.php:38
+msgid "Network scope"
+msgstr ""
+
+#: admin/views/vault-migrate.php:39
+msgid "Download bundle"
+msgstr ""
+
+#: admin/views/vault-migrate.php:44
+#: admin/views/vault-migrate.php:60
+msgid "Import bundle"
+msgstr ""
+
+#: admin/views/vault-migrate.php:49
+msgid "Bundle file (base64 text or .cvbundle)"
+msgstr ""
+
+#: admin/views/vault-migrate.php:54
+msgid "Decryption password"
+msgstr ""
+
+#: admin/views/vault-migrate.php:58
+msgid "Skip slugs that already exist"
+msgstr ""
+
+#: admin/views/vault-migrate.php:59
+msgid "Dry run (preview slugs only)"
+msgstr ""
+
+#: admin/views/vault-migrate.php:64
+msgid "CLI: wp credvault bundle_export / bundle_import"
+msgstr ""
+
+#: admin/views/vault-onboarding.php:26
+msgid "Get started with Credential Vault"
+msgstr ""
+
+#: admin/views/vault-onboarding.php:27
+#, php-format
+msgid "Setup progress: %d%%"
+msgstr ""
+
+#: admin/views/vault-onboarding.php:37
+msgid "Run import scanner"
+msgstr ""
+
+#: admin/views/vault-onboarding.php:38
+msgid "Add a credential"
+msgstr ""
+
+#: admin/views/vault-onboarding.php:44
+msgid "Dismiss checklist"
+msgstr ""
+
+#: admin/views/vault-rotation-guide.php:24
+msgid "Key rotation workflow"
+msgstr ""
+
+#: admin/views/vault-rotation-guide.php:27
+msgid "Save with an existing slug to rotate without downtime. Stripe and OpenAI slugs get optional smoke tests after save."
+msgstr ""
+
+#: admin/views/vault-rotation-guide.php:38
+msgid "Extend rotation tests"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:29
+msgid "network"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:29
+msgid "site"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:55
+msgid "Network credentials apply to all sites unless overridden by a site-scoped secret with the same slug."
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:60
+msgid "May inherit network"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:61
+msgid "Missing site slugs can fall back to network-scoped secrets with the same name."
+msgstr ""
+
+#. translators: %s: site or network
+#: admin/views/vault-scope-panel.php:73
+#, php-format
+msgid "Add or rotate %s credential"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:84
+msgid "Service"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:120
+msgid "Secret value"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:141
+msgid "e.g. DevOps"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:149
+msgid "e.g. Used by WooCommerce Stripe"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:155
+msgid "Save rotated key"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:156
+msgid "Save to vault"
+msgstr ""
+
+#: admin/views/vault-scope-panel.php:165
+msgid "Stored credentials"
+msgstr ""
+
+#: admin/views/vault-settings.php:28
+msgid "You have read-only access to the vault."
+msgstr ""
+
+#: admin/views/vault-settings.php:32
+msgid "Export metadata JSON"
+msgstr ""
+
+#: admin/views/vault-settings.php:41
+msgid "Security settings"
+msgstr ""
+
+#: admin/views/vault-settings.php:47
+msgid "Sudo session length (seconds)"
+msgstr ""
+
+#: admin/views/vault-settings.php:53
+msgid "Sudo policy"
+msgstr ""
+
+#: admin/views/vault-settings.php:58
+msgid "All writes require sudo"
+msgstr ""
+
+#: admin/views/vault-settings.php:62
+msgid "Sudo for reveal/copy only"
+msgstr ""
+
+#: admin/views/vault-settings.php:68
+msgid "Save settings"
+msgstr ""
+
+#: admin/views/vault-settings.php:73
+msgid "Break-glass read-only role"
+msgstr ""
+
+#: admin/views/vault-settings.php:75
+msgid "Assign the “Credential Vault Auditor” role (or the view_credential_vault capability) to users who may view configured status and audit history but never reveal secret values."
+msgstr ""
+
+#: admin/views/vault-settings.php:87
+msgid "Demo data"
+msgstr ""
+
+#: admin/views/vault-settings.php:89
+msgid "Install fake credentials (slug prefix “demo-”) to explore the dashboard, rotation reminders, environments, and audit log. Values are not real secrets."
+msgstr ""
+
+#: admin/views/vault-settings.php:93
+msgid "Demo install requires the Secrets API and a writable provider."
+msgstr ""
+
+#. translators: %d: number of tracked demo credentials
+#: admin/views/vault-settings.php:101
+#, php-format
+msgid "%d demo credential is tracked."
+msgid_plural "%d demo credentials are tracked."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/views/vault-settings.php:110
+msgid "Install demo data"
+msgstr ""
+
+#: admin/views/vault-settings.php:113
+msgid "Remove all tracked demo credentials?"
+msgstr ""
+
+#: admin/views/vault-settings.php:116
+msgid "Remove demo data"
+msgstr ""
+
+#. translators: %s: slug prefix
+#: admin/views/vault-settings.php:123
+#, php-format
+msgid "Slugs use the prefix “%s”. Disable this section with the credential_vault_demo_data_ui filter."
+msgstr ""
+
+#: admin/views/vault-settings.php:133
+msgid "Metadata export"
+msgstr ""
+
+#: admin/views/vault-settings.php:134
+msgid "Download slugs, labels, fingerprints, and rotation state — never secret values."
+msgstr ""
+
+#: admin/views/vault-settings.php:138
+msgid "Export JSON"
+msgstr ""
+
+#: admin/views/vault-sudo-panel.php:26
+msgid "Sudo active"
+msgstr ""
+
+#: admin/views/vault-sudo-panel.php:29
+#, php-format
+msgid "Sensitive actions allowed for about %s more minutes."
+msgstr ""
+
+#: admin/views/vault-sudo-panel.php:37
+msgid "End sudo session"
+msgstr ""
+
+#: admin/views/vault-sudo-panel.php:40
+msgid "Confirm your password"
+msgstr ""
+
+#: admin/views/vault-sudo-panel.php:43
+msgid "Re-authenticate before viewing, copying, or updating credentials."
+msgstr ""
+
+#: admin/views/vault-sudo-panel.php:50
+msgid "Unlock with site sudo"
+msgstr ""
+
+#: admin/views/vault-sudo-panel.php:54
+msgid "This vault also honors site-wide sudo sessions from the WP Sudo plugin when active."
+msgstr ""
+
+#: admin/views/vault-sudo-panel.php:61
+msgid "Password"
+msgstr ""
+
+#: admin/views/vault-sudo-panel.php:64
+msgid "Unlock vault"
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:32
+msgid "Manage encrypted API keys for popular services. Values are stored in the WordPress Secrets API; unlock the vault to view previews or save changes."
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:36
+msgid "Secrets API required before tokens can be stored."
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:62
+msgid "Configured"
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:64
+msgid "Not configured"
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:72
+msgid "Preview:"
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:76
+msgid "Unlock the vault to view a masked preview."
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:81
+msgid "Update key"
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:81
+msgid "Add key"
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:84
+msgid "All credentials"
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:90
+msgid "Recent vault activity"
+msgstr ""
+
+#: admin/views/vault-token-dashboard.php:92
+msgid "View full audit log"
+msgstr ""
+
+#: includes/class-auditor-experience.php:62
+msgid "Auditor mode: you can review audit and health data but cannot reveal, copy, or edit secrets."
+msgstr ""
+
+#: includes/class-credential-meta.php:39
+msgid "Webhook"
+msgstr ""
+
+#: includes/class-credential-meta.php:40
+msgid "Custom"
+msgstr ""
+
+#: includes/class-credential-meta.php:54
+msgid "Access key ID"
+msgstr ""
+
+#: includes/class-credential-meta.php:61
+msgid "Webhook URL"
+msgstr ""
+
+#: includes/class-credential-meta.php:68
+msgid "Client ID"
+msgstr ""
+
+#: includes/class-credential-meta.php:89
+msgid "Not set"
+msgstr ""
+
+#: includes/class-credential-meta.php:90
+msgid "Production"
+msgstr ""
+
+#: includes/class-credential-meta.php:91
+msgid "Staging"
+msgstr ""
+
+#: includes/class-credential-meta.php:92
+msgid "Local"
+msgstr ""
+
+#: includes/class-credential-meta.php:93
+msgid "Development"
+msgstr ""
+
+#: includes/class-credential-meta.php:108
+msgid "Secret or restricted API key for Stripe payments and billing."
+msgstr ""
+
+#: includes/class-credential-meta.php:114
+msgid "API key for OpenAI models and embeddings."
+msgstr ""
+
+#: includes/class-credential-meta.php:120
+msgid "Secret access key (store alongside IAM access key ID in a separate credential if needed)."
+msgstr ""
+
+#: includes/class-credential-meta.php:126
+msgid "Mailchimp Marketing API key for lists and campaigns."
+msgstr ""
+
+#: includes/class-credential-meta.php:132
+msgid "Transactional email API keys."
+msgstr ""
+
+#: includes/class-credential-meta.php:138
+msgid "Secret keys for spam protection on forms."
+msgstr ""
+
+#: includes/class-credential-meta.php:144
+msgid "Auth token for SMS and voice APIs."
+msgstr ""
+
+#: includes/class-credential-meta.php:150
+msgid "Server token for transactional email."
+msgstr ""
+
+#: includes/class-credential-meta.php:156
+msgid "Signing secret for incoming Slack webhooks and Events API."
+msgstr ""
+
+#: includes/class-credential-meta.php:162
+msgid "Personal access token for repos and Actions."
+msgstr ""
+
+#: includes/class-credential-meta.php:168
+msgid "Global API key or token for DNS and CDN."
+msgstr ""
+
+#: includes/class-credential-meta.php:174
+msgid "Browser or server key for Maps JavaScript / Geocoding."
+msgstr ""
+
+#: includes/class-credential-meta.php:180
+msgid "Client secret half of an OAuth application pair."
+msgstr ""
+
+#: includes/class-demo-data.php:71
+msgid "Stripe (demo live)"
+msgstr ""
+
+#: includes/class-demo-data.php:74
+msgid "Sample production payment key for UI testing only."
+msgstr ""
+
+#: includes/class-demo-data.php:84
+msgid "OpenAI (demo dev)"
+msgstr ""
+
+#: includes/class-demo-data.php:87
+msgid "Non-production model API key placeholder."
+msgstr ""
+
+#: includes/class-demo-data.php:96
+msgid "AWS secret (demo staging)"
+msgstr ""
+
+#: includes/class-demo-data.php:99
+msgid "Pairs with the demo access key ID below."
+msgstr ""
+
+#: includes/class-demo-data.php:110
+msgid "Inbound webhook (demo local)"
+msgstr ""
+
+#: includes/class-demo-data.php:116
+msgid "Exercises webhook preset fields and local environment badge."
+msgstr ""
+
+#: includes/class-demo-data.php:133
+msgid "Internal HMAC (demo custom)"
+msgstr ""
+
+#: includes/class-demo-data.php:136
+msgid "Custom service preset with operator notes."
+msgstr ""
+
+#: includes/class-demo-data.php:155
+#: includes/class-demo-data.php:213
+msgid "The Secrets API is not available."
+msgstr ""
+
+#: includes/class-demo-data.php:159
+msgid "Demo data requires a writable secrets provider."
+msgstr ""
+
+#: includes/class-demo-data.php:217
+msgid "Removing demo data requires a writable secrets provider."
+msgstr ""
+
+#: includes/class-duplicate-detector.php:44
+msgid "Plaintext option still populated while the vault holds this credential."
+msgstr ""
+
+#: includes/class-duplicate-detector.php:68
+msgid "Scanner found plaintext that matches a vault secret name."
+msgstr ""
+
+#: includes/class-duplicate-detector.php:114
+msgid "Review whether these slugs represent the same integration; retire duplicates after updating code references."
+msgstr ""
+
+#: includes/class-environment-guard.php:80
+msgid "Credential is tagged production but this site is non-production."
+msgstr ""
+
+#: includes/class-environment-guard.php:84
+msgid "Credential is tagged non-production but this site is production."
+msgstr ""
+
+#. translators: %d: number of new hygiene findings
+#: includes/class-hygiene-scheduler.php:103
+#, php-format
+msgid "Credential Vault weekly scan found %d new hygiene item."
+msgid_plural "Credential Vault weekly scan found %d new hygiene items."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-hygiene-scheduler.php:113
+msgid "Review vault health"
+msgstr ""
+
+#: includes/class-import-candidates.php:24
+msgid "WooCommerce Stripe (settings blob)"
+msgstr ""
+
+#: includes/class-import-candidates.php:30
+msgid "Mailchimp API key"
+msgstr ""
+
+#: includes/class-import-candidates.php:36
+msgid "OpenAI API key (generic option)"
+msgstr ""
+
+#: includes/class-import-candidates.php:42
+msgid "AWS secret access key (generic option)"
+msgstr ""
+
+#: includes/class-import-candidates.php:48
+msgid "reCAPTCHA secret key"
+msgstr ""
+
+#: includes/class-import-candidates.php:54
+msgid "SMTP password (generic)"
+msgstr ""
+
+#: includes/class-import-candidates.php:60
+msgid "Twilio auth token"
+msgstr ""
+
+#: includes/class-import-candidates.php:66
+msgid "Postmark server token"
+msgstr ""
+
+#: includes/class-import-candidates.php:72
+msgid "Slack API token (generic option)"
+msgstr ""
+
+#: includes/class-import-candidates.php:78
+msgid "GitHub access token (generic option)"
+msgstr ""
+
+#: includes/class-import-candidates.php:84
+msgid "Cloudflare global API key"
+msgstr ""
+
+#: includes/class-import-candidates.php:90
+msgid "Google Maps API key"
+msgstr ""
+
+#: includes/class-import-candidates.php:96
+msgid "OAuth client secret (generic option)"
+msgstr ""
+
+#: includes/class-import-candidates.php:102
+msgid "Slack signing secret"
+msgstr ""
+
+#: includes/class-onboarding.php:44
+msgid "Secrets API available"
+msgstr ""
+
+#: includes/class-onboarding.php:49
+msgid "Vault unlocked (sudo session)"
+msgstr ""
+
+#: includes/class-onboarding.php:54
+msgid "At least one credential stored"
+msgstr ""
+
+#: includes/class-onboarding.php:59
+msgid "No plaintext scanner hits (optional)"
+msgstr ""
+
+#: includes/class-plaintext-scanner.php:77
+msgid "Known integration option"
+msgstr ""
+
+#. translators: %s: wp_options option name
+#: includes/class-plaintext-scanner.php:118
+#, php-format
+msgid "Plugin option: %s"
+msgstr ""
+
+#: includes/class-plaintext-scanner.php:120
+msgid "Plugin option prefix"
+msgstr ""
+
+#. translators: %s: wp_options option name
+#: includes/class-plaintext-scanner.php:162
+#, php-format
+msgid "Option: %s"
+msgstr ""
+
+#: includes/class-plaintext-scanner.php:164
+msgid "Option name pattern"
+msgstr ""
+
+#. translators: 1: user ID, 2: meta key
+#: includes/class-plaintext-scanner.php:214
+#, php-format
+msgid "User #%1$d meta: %2$s"
+msgstr ""
+
+#: includes/class-plaintext-scanner.php:225
+msgid "User meta pattern"
+msgstr ""
+
+#: includes/class-plugin-adapters.php:25
+msgid "Read Stripe secret from vault instead of wc_stripe settings."
+msgstr ""
+
+#: includes/class-plugin-adapters.php:31
+msgid "Inject Stripe secret into EDD Stripe gateway settings."
+msgstr ""
+
+#: includes/class-plugin-adapters.php:37
+msgid "Supply reCAPTCHA secret to CF7 via filter."
+msgstr ""
+
+#: includes/class-plugin-adapters.php:43
+msgid "Override mailer API key at runtime."
+msgstr ""
+
+#: includes/class-rotation-recipes.php:43
+msgid "SendGrid"
+msgstr ""
+
+#: includes/class-rotation-recipes.php:55
+msgid "GitHub"
+msgstr ""
+
+#. translators: 1: provider name, 2: error message
+#: includes/class-rotation-recipes.php:93
+#, php-format
+msgid "%1$s rotation test failed: %2$s"
+msgstr ""
+
+#. translators: 1: provider name, 2: HTTP status code
+#: includes/class-rotation-recipes.php:109
+#, php-format
+msgid "%1$s rotation test returned HTTP %2$d."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/class-rotation-recipes.php:149
+#, php-format
+msgid "Mailchimp rotation test failed: %s"
+msgstr ""
+
+#. translators: %d: HTTP status code
+#: includes/class-rotation-recipes.php:164
+#, php-format
+msgid "Mailchimp rotation test returned HTTP %d."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/class-rotation-recipes.php:196
+#, php-format
+msgid "Twilio rotation test failed: %s"
+msgstr ""
+
+#. translators: %d: HTTP status code
+#: includes/class-rotation-recipes.php:211
+#, php-format
+msgid "Twilio rotation test returned HTTP %d."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/class-rotation-recipes.php:243
+#, php-format
+msgid "Cloudflare rotation test failed: %s"
+msgstr ""
+
+#. translators: %d: HTTP status code
+#: includes/class-rotation-recipes.php:258
+#, php-format
+msgid "Cloudflare rotation test returned HTTP %d."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/class-rotation-recipes.php:290
+#, php-format
+msgid "Stripe rotation test failed: %s"
+msgstr ""
+
+#. translators: %d: HTTP status code
+#: includes/class-rotation-recipes.php:305
+#, php-format
+msgid "Stripe rotation test returned HTTP %d."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/class-rotation-recipes.php:337
+#, php-format
+msgid "OpenAI rotation test failed: %s"
+msgstr ""
+
+#. translators: %d: HTTP status code
+#: includes/class-rotation-recipes.php:352
+#, php-format
+msgid "OpenAI rotation test returned HTTP %d."
+msgstr ""
+
+#. translators: %d: number of credentials
+#: includes/class-rotation-reminders.php:46
+#, php-format
+msgid "%d vault credential is past its rotate-by date."
+msgid_plural "%d vault credentials are past their rotate-by dates."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-rotation-reminders.php:56
+msgid "Review credentials"
+msgstr ""
+
+#: includes/class-rotation-workflow.php:24
+msgid "Save the new API key in the vault. The Secrets API keeps the previous value in a secondary slot automatically."
+msgstr ""
+
+#: includes/class-rotation-workflow.php:25
+msgid "Verify integrations (checkout, email, AI calls, etc.) against the new key."
+msgstr ""
+
+#: includes/class-rotation-workflow.php:26
+msgid "When everything works, retire the previous slot so only the new key remains."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:157
+#: includes/class-secrets-bridge.php:204
+#: includes/class-secrets-bridge.php:223
+#: includes/class-secrets-bridge.php:234
+#: includes/class-secrets-bridge.php:255
+msgid "The WordPress Secrets API is not available on this site."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:163
+msgid "Secrets are managed by your host and cannot be changed from WordPress."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:179
+msgid "Secret write was blocked."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:240
+msgid "Network secret retirement is unavailable."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:245
+msgid "Secret retirement is unavailable."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:276
+msgid "No previous secret slot is available to promote."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:335
+#: includes/class-secrets-bridge.php:349
+msgid "Import is unavailable."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:355
+msgid "Invalid option reference."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:364
+msgid "Option value is missing or not a string."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:373
+msgid "Invalid user meta reference."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:381
+msgid "User meta value is missing or not a string."
+msgstr ""
+
+#: includes/class-secrets-bridge.php:387
+msgid "Unknown import source."
+msgstr ""
+
+#: includes/class-secrets-manifest.php:24
+msgid "Manifest file is not readable."
+msgstr ""
+
+#: includes/class-secrets-manifest.php:29
+msgid "Manifest file is empty."
+msgstr ""
+
+#: includes/class-secrets-manifest.php:38
+msgid "Manifest must be valid JSON or supported YAML."
+msgstr ""
+
+#: includes/class-secrets-manifest.php:65
+msgid "Manifest contains no secrets entries."
+msgstr ""
+
+#: includes/class-secrets-manifest.php:71
+msgid "Manifest entry is missing a slug."
+msgstr ""
+
+#. translators: %s: slug
+#: includes/class-secrets-manifest.php:78
+#, php-format
+msgid "Secrets API unavailable — cannot verify slug %s."
+msgstr ""
+
+#. translators: 1: slug, 2: error message
+#: includes/class-secrets-manifest.php:89
+#, php-format
+msgid "Slug %1$s is undecryptable: %2$s"
+msgstr ""
+
+#. translators: %s: slug
+#: includes/class-secrets-manifest.php:100
+#, php-format
+msgid "Required secret missing in vault: %s"
+msgstr ""
+
+#. translators: %s: slug
+#: includes/class-secrets-manifest.php:116
+#, php-format
+msgid "Rotate-by date is overdue for %s."
+msgstr ""
+
+#. translators: %s: secret name
+#: includes/class-secrets-manifest.php:133
+#, php-format
+msgid "Undecryptable site secret: %s"
+msgstr ""
+
+#: includes/class-site-health.php:32
+msgid "Credential Vault: undecryptable secrets"
+msgstr ""
+
+#: includes/class-site-health.php:37
+msgid "Credential Vault: credentials pending rotation"
+msgstr ""
+
+#: includes/class-site-health.php:42
+msgid "Credential Vault: plaintext credential candidates"
+msgstr ""
+
+#: includes/class-site-health.php:47
+msgid "Credential Vault: sudo session TTL"
+msgstr ""
+
+#: includes/class-site-health.php:52
+msgid "Credential Vault: audit log capacity"
+msgstr ""
+
+#: includes/class-site-health.php:57
+msgid "Credential Vault: secrets manifest"
+msgstr ""
+
+#: includes/class-site-health.php:79
+msgid "All stored secrets decrypt successfully"
+msgstr ""
+
+#: includes/class-site-health.php:81
+msgid "No undecryptable secrets were detected."
+msgstr ""
+
+#: includes/class-site-health.php:89
+msgid "Some secrets cannot be decrypted"
+msgstr ""
+
+#: includes/class-site-health.php:91
+msgid "These credentials exist but failed decryption (often after key rotation or migration). Re-enter them in Credential Vault."
+msgstr ""
+
+#: includes/class-site-health.php:92
+msgid "Open Credential Vault"
+msgstr ""
+
+#: includes/class-site-health.php:111
+msgid "No credentials flagged for rotation"
+msgstr ""
+
+#: includes/class-site-health.php:113
+msgid "No secrets are marked needs_rotation."
+msgstr ""
+
+#: includes/class-site-health.php:121
+msgid "Credentials should be rotated"
+msgstr ""
+
+#: includes/class-site-health.php:123
+msgid "These secrets were imported or flagged by the API as still exposed in old backups. Rotate the live credential with your provider."
+msgstr ""
+
+#: includes/class-site-health.php:140
+msgid "Secrets provider"
+msgstr ""
+
+#: includes/class-site-health.php:144
+msgid "Vault credentials"
+msgstr ""
+
+#: includes/class-site-health.php:148
+msgid "Other plugin secrets"
+msgstr ""
+
+#: includes/class-site-health.php:172
+msgid "Security"
+msgstr ""
+
+#: includes/class-sudo-gate.php:72
+msgid "You must be logged in."
+msgstr ""
+
+#: includes/class-sudo-gate.php:78
+msgid "Too many failed attempts. Try again in a few minutes."
+msgstr ""
+
+#: includes/class-sudo-gate.php:94
+msgid "Additional verification is required before sudo."
+msgstr ""
+
+#: includes/class-sudo-gate.php:100
+msgid "Incorrect password."
+msgstr ""
+
+#: includes/class-sudo-gate.php:133
+msgid "Confirm your password to view or change credentials."
+msgstr ""
+
+#: includes/class-sudo-integration.php:36
+msgid "Credential Vault: view or change API keys"
+msgstr ""
+
+#: includes/class-vault-bundle.php:27
+#: includes/class-vault-bundle.php:93
+msgid "Secrets API is not available."
+msgstr ""
+
+#: includes/class-vault-bundle.php:31
+msgid "Export password is required."
+msgstr ""
+
+#: includes/class-vault-bundle.php:97
+msgid "Import requires a writable secrets provider."
+msgstr ""
+
+#: includes/class-vault-bundle.php:198
+msgid "Could not encode bundle."
+msgstr ""
+
+#: includes/class-vault-bundle.php:202
+msgid "OpenSSL is required for bundle encryption."
+msgstr ""
+
+#: includes/class-vault-bundle.php:212
+msgid "Encryption failed."
+msgstr ""
+
+#: includes/class-vault-bundle.php:225
+msgid "Could not encode bundle wrapper."
+msgstr ""
+
+#: includes/class-vault-bundle.php:234
+msgid "Invalid bundle encoding."
+msgstr ""
+
+#: includes/class-vault-bundle.php:239
+msgid "Invalid bundle format."
+msgstr ""
+
+#: includes/class-vault-bundle.php:248
+msgid "Corrupt bundle."
+msgstr ""
+
+#: includes/class-vault-bundle.php:254
+msgid "Wrong password or corrupt bundle."
+msgstr ""
+
+#: includes/class-vault-bundle.php:259
+msgid "Invalid bundle payload."
+msgstr ""
+
+#: includes/class-vault-capabilities.php:32
+msgid "Credential Vault Auditor"
+msgstr ""
+
+#: includes/functions-api.php:147
+msgid "The WordPress Secrets API is not available."
 msgstr ""

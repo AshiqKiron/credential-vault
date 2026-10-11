@@ -20,6 +20,9 @@
  * @var bool   $pro_active
  * @var bool   $can_manage
  * @var list<array<string, mixed>> $hygiene_issues
+ * @var array<string, int|bool|string> $vault_health
+ * @var array<string, array{time: int, action: string, source: string}> $audit_activity
+ * @var bool   $auditor_only
  */
 
 declare( strict_types=1 );
@@ -28,6 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use CredentialVault\Auditor_Experience;
 use CredentialVault\Credential_Meta;
 use CredentialVault\Secrets_Bridge;
 
@@ -46,10 +50,6 @@ $extra_tabs = apply_filters( 'credential_vault_admin_tabs', array() );
 ?>
 <div class="wrap new-vault-wrap">
 	<h1><?php esc_html_e( 'Credential Vault', 'credvault' ); ?></h1>
-
-	<p class="description">
-		<?php esc_html_e( 'Centralized, encrypted credential management for WordPress 7.2’s Secrets API — with sudo re-authentication, audit history, and safe key rotation.', 'credvault' ); ?>
-	</p>
 
 	<?php include CREDENTIAL_VAULT_DIR . 'admin/views/vault-features-overview.php'; ?>
 
@@ -75,22 +75,26 @@ $extra_tabs = apply_filters( 'credential_vault_admin_tabs', array() );
 
 	<nav class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( $base_url ); ?>" class="nav-tab <?php echo 'dashboard' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Token dashboard', 'credvault' ); ?></a>
-		<a href="<?php echo esc_url( add_query_arg( 'tab', 'credentials', $base_url ) ); ?>" class="nav-tab <?php echo 'credentials' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Site credentials', 'credvault' ); ?></a>
-		<?php if ( $network_available ) : ?>
+		<?php if ( ! ( $auditor_only ?? false ) ) : ?>
+			<a href="<?php echo esc_url( add_query_arg( 'tab', 'credentials', $base_url ) ); ?>" class="nav-tab <?php echo 'credentials' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Site credentials', 'credvault' ); ?></a>
+		<?php endif; ?>
+		<?php if ( $network_available && ! ( $auditor_only ?? false ) ) : ?>
 			<a href="<?php echo esc_url( add_query_arg( 'tab', 'network', $base_url ) ); ?>" class="nav-tab <?php echo 'network' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Network', 'credvault' ); ?></a>
 		<?php endif; ?>
-		<?php if ( $can_manage ) : ?>
+		<?php if ( $can_manage && ! ( $auditor_only ?? false ) ) : ?>
 			<a href="<?php echo esc_url( add_query_arg( 'tab', 'import', $base_url ) ); ?>" class="nav-tab <?php echo 'import' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Import', 'credvault' ); ?></a>
 		<?php endif; ?>
 		<?php if ( $api_available ) : ?>
 			<a href="<?php echo esc_url( add_query_arg( 'tab', 'discover', $base_url ) ); ?>" class="nav-tab <?php echo 'discover' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Other secrets', 'credvault' ); ?></a>
 		<?php endif; ?>
 		<a href="<?php echo esc_url( add_query_arg( 'tab', 'audit', $base_url ) ); ?>" class="nav-tab <?php echo 'audit' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Audit log', 'credvault' ); ?></a>
-		<?php if ( $can_manage ) : ?>
+		<?php if ( $can_manage && ! ( $auditor_only ?? false ) ) : ?>
 			<a href="<?php echo esc_url( add_query_arg( 'tab', 'settings', $base_url ) ); ?>" class="nav-tab <?php echo 'settings' === $tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'credvault' ); ?></a>
 		<?php endif; ?>
 		<?php foreach ( $extra_tabs as $slug => $label ) : ?>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', $slug, $base_url ) ); ?>" class="nav-tab <?php echo $tab === $slug ? 'nav-tab-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
+			<?php if ( Auditor_Experience::tab_allowed( $slug ) ) : ?>
+				<a href="<?php echo esc_url( add_query_arg( 'tab', $slug, $base_url ) ); ?>" class="nav-tab <?php echo $tab === $slug ? 'nav-tab-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
+			<?php endif; ?>
 		<?php endforeach; ?>
 	</nav>
 

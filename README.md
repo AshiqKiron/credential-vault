@@ -31,9 +31,11 @@ Artifacts land in `dist/`. Each archive contains a single top-level folder ready
 
 ## Features
 
-**Free:** Centralized token dashboard (Stripe, OpenAI, AWS, Mailchimp), sudo-gated view/edit, key usage audit log, site/network credentials, import wizard + plaintext option scanner, credential metadata (environment, rotate-by, notes), `manage_credential_vault` capability, audit CSV export, WP-CLI (`wp credvault list|status|scan`), Site Health tests, `credential_vault_get()` helper (access is audited).
+**Free:** Centralized token dashboard (Stripe, OpenAI, AWS, Mailchimp), sudo-gated view/edit, key usage audit log, site/network credentials, import wizard + plaintext option scanner, credential metadata (environment, rotate-by, notes), `manage_credential_vault` capability, audit CSV export, WP-CLI (`wp credvault list|status|scan|validate|set|rotate|demo|usage|dedupe|bundle-export|bundle-import`), manifest validation for CI, Developer admin tab (usage map + integration snippets), encrypted bundle migration, dev profile on `local`/`development`, test-mode in-memory storage, Site Health tests, `credential_vault_get()` helper (access is audited, optional caller `source` context).
 
-**Pro:** REST API (`credential-vault/v1`), extended audit retention/search, outbound webhooks (Automation tab), plus WP Sudo audit integration.
+**Pro:** REST API (`credential-vault/v1`, manifest validate, scoped API tokens), extended audit retention/search, outbound webhooks (incl. `vault.validation_failed`), plugin option adapters, env sync + `.env.example` CLI, template credentials, async import jobs, plus WP Sudo audit integration.
+
+**Monorepo:** `npm run sync-check` / `composer sync-check` — legacy root mirrors must match `packages/free/`. PHPStan/IDE stubs: `stubs/credential-vault-stubs.php`. Example manifest: `docs/credvault.manifest.example.json`.
 
 ## Pro integration
 

@@ -70,8 +70,28 @@ Guidelines:
 | `npm run zip:free` / `npm run zip:pro` | Build one zip |
 | `npm run link` | Symlink packages for MAMP/local WordPress |
 | `npm run check:org` | Org submission checks (`bin/check-org-submission.sh`) |
+| `npm run sync-check` | Legacy root `includes/`/`admin/`/`public/` mirrors match `packages/free/` |
+| `npm run make-pot` | Regenerate `.pot` files for free + pro |
 
-Equivalent: `composer zip` where defined in `composer.json`.
+### Composer scripts (PHP quality / zips)
+
+| Script | Purpose |
+|--------|---------|
+| `composer zip` | Same as `npm run zip` |
+| `composer phpcs` | WordPress CS on `packages/` |
+| `composer phpcbf` | Auto-fix where PHPCBF supports it |
+| `composer sync-check` | Same as `npm run sync-check` |
+| `composer make-pot` | Same as `npm run make-pot` |
+| `composer dev:fixtures` | WP-CLI demo credentials (`WP_PATH` optional) |
+
+## Product architecture (for Agent)
+
+High-level feature map and extension hooks live in package **`AGENTS.md`** files (not in `.mdc` rules):
+
+- [`packages/free/AGENTS.md`](../packages/free/AGENTS.md) — boot order, `Secrets_Bridge`, audit/sudo, admin tabs, CLI/manifest
+- [`packages/pro/AGENTS.md`](../packages/pro/AGENTS.md) — full `register_pro_features()` map, REST/tokens, webhooks, activator
+
+User-facing feature list: [`README.md`](../README.md). IDE stubs: [`stubs/credential-vault-stubs.php`](../stubs/credential-vault-stubs.php).
 
 ## Checklist for a new rule
 

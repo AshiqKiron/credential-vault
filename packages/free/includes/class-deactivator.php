@@ -18,6 +18,7 @@ final class Deactivator {
 	 * Fired when the plugin is deactivated.
 	 */
 	public static function deactivate(): void {
+		Hygiene_Scheduler::unschedule();
 		flush_rewrite_rules();
 	}
 }

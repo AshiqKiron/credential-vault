@@ -17,6 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use CredentialVault\Admin\Field_Help;
+
 include CREDENTIAL_VAULT_DIR . 'admin/views/vault-sudo-panel.php';
 
 $hygiene_issues = $hygiene_issues ?? array();
@@ -37,7 +39,17 @@ $hygiene_issues = $hygiene_issues ?? array();
 		<tbody>
 			<?php foreach ( $hygiene_issues as $issue ) : ?>
 				<tr>
-					<td><?php echo esc_html( (string) ( $issue['label'] ?? '' ) ); ?><br /><span class="description"><?php echo esc_html( (string) ( $issue['detail'] ?? '' ) ); ?></span></td>
+					<td>
+						<span class="new-vault-heading-tip">
+							<?php echo esc_html( (string) ( $issue['label'] ?? '' ) ); ?>
+							<?php
+							$detail = (string) ( $issue['detail'] ?? '' );
+							if ( '' !== $detail ) {
+								echo Field_Help::icon( $detail );
+							}
+							?>
+						</span>
+					</td>
 					<td><code><?php echo esc_html( (string) ( $issue['vault_name'] ?? '' ) ); ?></code></td>
 					<td><code><?php echo esc_html( (string) ( $issue['source'] ?? '' ) ); ?></code></td>
 				</tr>

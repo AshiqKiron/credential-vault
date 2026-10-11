@@ -14,7 +14,10 @@ REST API, WP Sudo integration, and secret discovery for Credential Vault.
 
 Requires the free **Credential Vault** plugin.
 
-* REST routes under `credential-vault/v1` for list, rotate, reveal, delete, retire
+* REST routes under `credential-vault/v1` for list, rotate, reveal, delete, retire, promote-previous, metadata, bulk rotate, audit query, import jobs, compliance, network blue/green
+* Scoped Bearer API tokens, webhooks (Slack/PagerDuty), long-retention audit table, SIEM JSON Lines export
+* Per-secret ACLs, approval queue, 2FA hook before sudo, rotation nudges, env sync WP-CLI, plugin adapters, health checks, anomaly alerts
+* Multisite network overview, template credentials, license seats
 * Sudo via active session or `sudo_password` / `POST /sudo`
 * **Sudo-gated action audit logger** when [WP Sudo](https://github.com/dknauss/Sudo) is active — session events, blocks, passes, lockouts, with IP and user agent
 * Custom vault re-authentication copy and one-click link to the WP Sudo challenge page

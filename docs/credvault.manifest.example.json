@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "secrets": [
+    {
+      "slug": "stripe-api-key",
+      "label": "Stripe",
+      "service": "stripe",
+      "environment": "production",
+      "rotate_by": 1735689600,
+      "owner": "platform-team",
+      "runbook_url": "https://example.com/runbooks/stripe"
+    },
+    {
+      "slug": "openai-api-key",
+      "label": "OpenAI",
+      "service": "openai",
+      "environment": "staging"
+    },
+    {
+      "slug": "smtp-password",
+      "label": "SMTP",
+      "service": "custom",
+      "environment": "production"
+    }
+  ]
+}

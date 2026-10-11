@@ -31,6 +31,15 @@ final class Plugin {
 		Rotation_Reminders::register( $this->loader );
 		Rotation_Recipes::register( $this->loader );
 		Vault_Capabilities::register( $this->loader );
+		Hygiene_Scheduler::register( $this->loader );
+		Plugin_Adapters::register( $this->loader );
+		Auditor_Experience::register( $this->loader );
+		Dev_Profile::register();
+		Test_Storage::register();
+		if ( is_admin() ) {
+			Admin\Developer_Admin::register();
+			Admin\Features_Admin::register();
+		}
 		$this->define_admin_hooks();
 		$this->define_cli_hooks();
 		$this->define_public_hooks();
@@ -71,6 +80,9 @@ final class Plugin {
 		Audit_Log::register_hooks( $this->loader );
 		Sudo_Integration::register( $this->loader );
 		Admin\Vault_Actions::register( $this->loader );
+		Dashboard_Widget::register( $this->loader );
+		Admin_Bar_Sudo::register( $this->loader );
+		Menu_Badge::register( $this->loader );
 
 		$admin = new Admin\Admin();
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_assets' );

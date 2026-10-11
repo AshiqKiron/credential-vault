@@ -20,6 +20,9 @@
 	"scripts": {
 		"zip": "bash bin/build-zips.sh",
 		"phpcs": "phpcs --standard=WordPress --extensions=php packages/",
-		"phpcbf": "phpcbf --standard=WordPress --extensions=php packages/"
+		"phpcbf": "phpcbf --standard=WordPress --extensions=php packages/",
+		"dev:fixtures": "wp credvault demo --path=${WP_PATH:-.}",
+		"sync-check": "bash bin/sync-check.sh",
+		"make-pot": "bash bin/make-pot.sh"
 	}
 }
